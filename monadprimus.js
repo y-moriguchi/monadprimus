@@ -127,7 +127,7 @@
 			return [].concat(args);
 		};
 		getTuple["@tupleId@"] = TUPLE_ID;
-		return getTuple();
+		return getTuple;
 	};
 	M.T.isTuple = function(obj) {
 		return obj["@tupleId@"] === TUPLE_ID;
@@ -170,7 +170,7 @@
 				return c(r);
 			}
 		};
-	}
+	};
 	M.Cont.unit = function(value) {
 		return M.Cont(function(s) {
 			return s(value);
@@ -184,7 +184,93 @@
 				});
 			}).runCont(k);
 		});
+	};
+	M.Identity = function(x) {
+		return {
+			bind: function(b) {
+				return b(x);
+			}
+		};
+	};
+	M.Identity.unit = function(x) {
+		return M.Identity(x);
+	};
+	M.State = function(func) {
+		return {
+			bind: function(b) {
+				var me = this;
+				return M.State(function(s0) {
+					var s1 = me.runState(s0),
+						s2 = b(s1(0)).runState(s1(1));
+					return s2;
+				});
+			},
+			runState: function(s) {
+				return func(s);
+			}
+		};
 	}
+	M.State.unit = function(x) {
+		return M.State(function(s) {
+			return M.T(x, s);
+		});
+	};
+	M.State.get = M.State(function(s) {
+		return M.T(s, s);
+	});
+	M.State.put = function(x) {
+		return M.State(function(_) {
+			return M.T(undef, x);
+		});
+	};
+	M.State.modify = function(f) {
+		return M.State(function(x) {
+			return M.T(undef, f(x));
+		});
+	};
+	M.StateT = function(Type) {
+		function St(func) {
+			return {
+				bind: function(b) {
+					var me = this;
+					return St(function(s0) {
+						return me.runStateT(s0).bind(function(s1) {
+							return b(s1(0)).runStateT(s1(1));
+						});
+					});
+				},
+				runStateT: function(s) {
+					return func(s);
+				}
+			};
+		}
+		St.unit = function(x) {
+			return St(function(s) {
+				return Type.unit(M.T(x, s));
+			});
+		};
+		St.get = St(function(s) {
+			return Type.unit(M.T(s, s));
+		});
+		St.put = function(x) {
+			return St(function(_) {
+				return Type.unit(M.T(undef, x));
+			});
+		};
+		St.modify = function(f) {
+			return St(function(x) {
+				return Type.unit(M.T(undef, f(x)));
+			});
+		};
+		St.lift = function(m) {
+			return St(function(s) {
+				return m.bind(function(a) {
+					return Type.unit(a, s);
+				});
+			});
+		};
+		return St;
+	};
 	if(typeof module !== "undefined" && module.exports) {
 		module.exports = M;
 	} else {
