@@ -132,26 +132,26 @@
 	M.T.isTuple = function(obj) {
 		return obj["@tupleId@"] === TUPLE_ID;
 	};
-	M.F = function(fn) {
-		var func;
-		function partial(args) {
+	M.F = function(fn, arity) {
+		var func,
+			len = arity === undef ? fn.length : arity;
+		function partial(args, action) {
 			return function() {
 				var argsnew = args.concat(Array.prototype.slice.call(arguments));
-				if(argsnew.length < fn.length) {
-					return M.F(partial(argsnew));
+				if(argsnew.length < len) {
+					return M.F(partial(argsnew, action));
 				} else {
-					return fn.apply(null, argsnew);
+					var res = fn.apply(null, argsnew);
+					return action ? action(res) : res;
 				}
 			};
 		}
 		func = partial([]);
 		func.compose = function(b) {
-			if(fn.length !== 1 || b.length !== 1) {
+			if(b.length !== 1) {
 				throw new Error("arity of function to compose must be 1");
 			}
-			return M.F(function(arg) {
-				return fn(b(arg));
-			});
+			return M.F(partial([], b), fn.length);
 		}
 		return func;
 	}
