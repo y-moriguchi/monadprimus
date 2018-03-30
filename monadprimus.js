@@ -7,7 +7,8 @@
  * http://opensource.org/licenses/mit-license.php
  **/
 (function(root) {
-	var MP = {},
+	var M = {},
+		TUPLE_ID = {},
 		undef = void 0,
 		nil;
 	function List(value, succ) {
@@ -88,7 +89,7 @@
 		}
 	}
 	nil = new Nil();
-	MP.List = function() {
+	M.L = function() {
 		var args = Array.prototype.slice.call(arguments),
 			res = nil,
 			i;
@@ -99,20 +100,68 @@
 		}
 		return res;
 	};
-	MP.List.Nil = nil;
-	MP.List.unit = function(x) {
+	M.L.Nil = nil;
+	M.L.unit = function(x) {
 		return new List(x, function() { return nil; });
 	};
-	MP.List.N = function(one) {
+	M.L.N = function(one) {
 		function succ(n) {
 			return new List(n, function() { return succ(n + 1); });
 		}
 		return succ(one);
 	};
+	M.T = function() {
+		var args = Array.prototype.slice.call(arguments);
+		function getTuple(n) {
+			return args[n];
+		}
+		getTuple.toString = function() {
+			var res = "(",
+				i;
+			for(i = 0; i < args.length; i++) {
+				res += (i > 0 ? "," : "") + args[i];
+			}
+			return res + ")";
+		};
+		getTuple.toArray = function() {
+			return [].concat(args);
+		};
+		getTuple["@tupleId@"] = TUPLE_ID;
+		return getTuple();
+	};
+	M.T.isTuple = function(obj) {
+		return obj["@tupleId@"] === TUPLE_ID;
+	};
+	M.F = function(fn) {
+		var func;
+		function partial(args) {
+			return function() {
+				var argsnew = args.concat(Array.prototype.slice.call(arguments));
+				if(argsnew.length < fn.length) {
+					return M.F(partial(argsnew));
+				} else {
+					return fn.apply(null, argsnew);
+				}
+			};
+		}
+		func = partial([]);
+		func.compose = function(b) {
+			if(fn.length !== 1 || b.length !== 1) {
+				throw new Error("arity of function to compose must be 1");
+			}
+			return M.F(function(arg) {
+				return fn(b(arg));
+			});
+		}
+		return func;
+	}
+	M.F.add = M.F(function(a, b) { return a + b; });
 	if(typeof module !== "undefined" && module.exports) {
-		module.exports = MP;
+		module.exports = M;
 	} else {
-		root["MonadPrimus"] = root["MP"] = MP;
-		root["$L"] = MP.List;
+		root["MonadPrimus"] = root["M"] = M;
+		root["$L"] = M.L;
+		root["$T"] = M.T;
+		root["$F"] = M.F;
 	}
 })(this);
