@@ -10,7 +10,8 @@
 	var M = {},
 		TUPLE_ID = {},
 		undef = void 0,
-		nil;
+		nil,
+		Nothing;
 	function List(value, succ) {
 		this._value = value;
 		this._succ = succ;
@@ -30,7 +31,7 @@
 					return nil;
 				}
 			}
-			return new List(mapped._value, function() { return getNext(mapped._succ); });
+			return mapped === nil ? nil : new List(mapped._value, function() { return getNext(mapped._succ); });
 		},
 		take: function(n) {
 			var res = [],
@@ -50,6 +51,7 @@
 						return new List(next._value, function() { return filterNext(next._succ()); });
 					}
 				}
+				return nil;
 			}
 			return filterNext(this);
 		},
@@ -70,10 +72,9 @@
 			return new List(fn(me._value), function() { return me._succ().map(fn); });
 		}
 	};
-	function Nil() {}
-	Nil.prototype = {
+	nil = {
 		bind: function(b) {
-			return b;
+			return this;
 		},
 		take: function(_) {
 			return [];
@@ -87,8 +88,8 @@
 		map: function(_) {
 			return this;
 		}
-	}
-	nil = new Nil();
+	};
+	M.Nil = nil;
 	M.L = function() {
 		var args = Array.prototype.slice.call(arguments),
 			res = nil,
@@ -189,6 +190,9 @@
 		return {
 			bind: function(b) {
 				return b(x);
+			},
+			toString: function() {
+				return x + "";
 			}
 		};
 	};
@@ -215,10 +219,10 @@
 			return M.T(x, s);
 		});
 	};
-	M.State.get = M.State(function(s) {
+	M.State.getState = M.State(function(s) {
 		return M.T(s, s);
 	});
-	M.State.put = function(x) {
+	M.State.putState = function(x) {
 		return M.State(function(_) {
 			return M.T(undef, x);
 		});
@@ -249,10 +253,10 @@
 				return Type.unit(M.T(x, s));
 			});
 		};
-		St.get = St(function(s) {
+		St.getState = St(function(s) {
 			return Type.unit(M.T(s, s));
 		});
-		St.put = function(x) {
+		St.putState = function(x) {
 			return St(function(_) {
 				return Type.unit(M.T(undef, x));
 			});
@@ -270,6 +274,82 @@
 			});
 		};
 		return St;
+	};
+	M.Just = function(x) {
+		return {
+			bind: function(b) {
+				return b(x);
+			},
+			value: function() {
+				return x;
+			},
+			or: function(_) {
+				return this;
+			},
+			isNothing: function() {
+				return false;
+			},
+			toString: function() {
+				return "Just " + x;
+			}
+		};
+	};
+	M.Nothing = {
+		bind: function(_) { return this; },
+		value: function(_) {
+			throw new Error("can not get value from Nothing");
+		},
+		or: function(b) {
+			return b;
+		},
+		isNothing: function() {
+			return true;
+		},
+		toString: function() {
+			return "Nothing";
+		}
+	};
+	M.Maybe = {
+		unit: function(x) {
+			return M.Just(x);
+		}
+	};
+	M.Right = function(x) {
+		return {
+			bind: function(b) {
+				return b(x);
+			},
+			either: function(leftf, rightf) {
+				return rightf(x);
+			},
+			or: function(_) {
+				return this;
+			},
+			toString: function() {
+				return "Right " + x;
+			}
+		};
+	};
+	M.Left = function(x) {
+		return {
+			bind: function(_) {
+				return this;
+			},
+			either: function(leftf, rightf) {
+				return leftf(x);
+			},
+			or: function(b) {
+				return b;
+			},
+			toString: function() {
+				return "Left " + x;
+			}
+		};
+	};
+	M.Either = {
+		unit: function(x) {
+			return M.Right(x);
+		}
 	};
 	if(typeof module !== "undefined" && module.exports) {
 		module.exports = M;
