@@ -264,4 +264,41 @@ describe("MonadPrimus", function () {
 			}).runStateT(4).value().toArray());
 		});
 	});
+
+	describe("testing function wrapper", function () {
+		function f1(x, y, z) { return x + y * z; }
+		function f2() { return 765; }
+		function f3(x) { return x + 3; }
+		function f4(x) { return x + 4; }
+		it("function", function () {
+			expect($F(f1)(7)(6)(5)).toBe(37);
+			expect($F(f1)(7, 6)(5)).toBe(37);
+			expect($F(f1)(7, 6, 5)).toBe(37);
+			expect($F(f1)(7)(6, 5)).toBe(37);
+			expect($F(f1)()(7)(6)(5)).toBe(37);
+			expect($F(f1)()()(7)(6)(5)).toBe(37);
+			expect($F(f2)()).toBe(765);
+		});
+		it("compose", function () {
+			expect($F(f1).compose(f3)(7)(6)(5)).toBe(40);
+			expect($F(f1).compose(f3)(7, 6)(5)).toBe(40);
+			expect($F(f1).compose(f3)(7, 6, 5)).toBe(40);
+			expect($F(f1).compose(f3)(7)(6, 5)).toBe(40);
+			expect($F(f1).compose(f3)()(7)(6)(5)).toBe(40);
+			expect($F(f1).compose(f3)()()(7)(6)(5)).toBe(40);
+			expect($F(f1).compose(f3).compose(f4)(7)(6)(5)).toBe(44);
+			expect($F(f1).compose(f3).compose(f4)(7, 6)(5)).toBe(44);
+			expect($F(f1).compose(f3).compose(f4)(7, 6, 5)).toBe(44);
+			expect($F(f1).compose(f3).compose(f4)(7)(6, 5)).toBe(44);
+			expect($F(f1).compose(f3).compose(f4)()(7)(6)(5)).toBe(44);
+			expect($F(f1).compose(f3).compose(f4)()()(7)(6)(5)).toBe(44);
+			expect($F(f2).compose(f3)()).toBe(768);
+			expect($F(f2).compose(f3).compose(f4)()).toBe(772);
+			expect($F(f3).compose(f3).compose(f3)(4)).toBe(13);
+			expect(function() { $F(f1).compose(f2) }).toThrow();
+			expect(function() { $F(f1).compose(f1) }).toThrow();
+			expect(function() { $F(f2).compose(f2) }).toThrow();
+			expect(function() { $F(f2).compose(f1) }).toThrow();
+		});
+	});
 });
