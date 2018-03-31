@@ -150,6 +150,29 @@ describe("MonadPrimus", function () {
 			expect(M.Nil.map(function(x) { return x * x; }).take()).toEqual([]);
 			expect(M.L.N(1).map(function(x) { return x * x; }).take(5)).toEqual([1, 4, 9, 16, 25]);
 		});
+		it("any", function () {
+			expect($L(1, 4, 5).any(function(x) { return x % 2 === 0; })).toBe(true);
+			expect($L(1, 3, 6).any(function(x) { return x % 2 === 0; })).toBe(true);
+			expect($L(2, 3, 6).any(function(x) { return x % 2 === 0; })).toBe(true);
+			expect($L(1, 3, 5).any(function(x) { return x % 2 === 0; })).toBe(false);
+			expect(M.Nil.any(function(x) { return x % 2 === 0; })).toBe(false);
+			expect($L().any(function(x) { return x % 2 === 0; })).toBe(false);
+			expect(M.L.N(1).any(function(x) { return x % 5 === 0; })).toBe(true);
+		});
+		it("every", function () {
+			expect($L(1, 4, 5).every(function(x) { return x % 2 === 1; })).toBe(false);
+			expect($L(1, 3, 6).every(function(x) { return x % 2 === 1; })).toBe(false);
+			expect($L(2, 3, 6).every(function(x) { return x % 2 === 1; })).toBe(false);
+			expect($L(1, 3, 5).every(function(x) { return x % 2 === 1; })).toBe(true);
+			expect(M.Nil.every(function(x) { return x % 2 === 0; })).toBe(true);
+			expect($L().every(function(x) { return x % 2 === 0; })).toBe(true);
+			expect(M.L.N(1).every(function(x) { return x % 5 !== 0; })).toBe(false);
+		});
+		it("range", function () {
+			expect(M.L.range(1, 5).take()).toEqual([1, 2, 3, 4, 5]);
+			expect(M.L.range(1, 1).take()).toEqual([1]);
+			expect(function() { M.L.range(2, 1) }).toThrow();
+		});
 		it("monad rule", function () {
 			expect(M.L.unit(3).bind(fn).take()).toEqual(fn(3).take());
 			expect($L(1, 2, 3).bind(M.L.unit).take()).toEqual($L(1, 2, 3).take());
@@ -270,6 +293,7 @@ describe("MonadPrimus", function () {
 		function f2() { return 765; }
 		function f3(x) { return x + 3; }
 		function f4(x) { return x + 4; }
+		function f5(x, y, z) { return x + y + z; }
 		it("function", function () {
 			expect($F(f1)(7)(6)(5)).toBe(37);
 			expect($F(f1)(7, 6)(5)).toBe(37);
@@ -278,6 +302,12 @@ describe("MonadPrimus", function () {
 			expect($F(f1)()(7)(6)(5)).toBe(37);
 			expect($F(f1)()()(7)(6)(5)).toBe(37);
 			expect($F(f2)()).toBe(765);
+			expect($F(f5)("7")("6")("5")).toBe("765");
+			expect($F(f5)("7", "6")("5")).toBe("765");
+			expect($F(f5)("7", "6", "5")).toBe("765");
+			expect($F(f5)("7")("6", "5")).toBe("765");
+			expect($F(f5)()("7")("6")("5")).toBe("765");
+			expect($F(f5)()()("7")("6")("5")).toBe("765");
 		});
 		it("compose", function () {
 			expect($F(f1).compose(f3)(7)(6)(5)).toBe(40);
@@ -299,6 +329,12 @@ describe("MonadPrimus", function () {
 			expect(function() { $F(f1).compose(f1) }).toThrow();
 			expect(function() { $F(f2).compose(f2) }).toThrow();
 			expect(function() { $F(f2).compose(f1) }).toThrow();
+			expect($F(f5).compose(f3)("7")("6")("5")).toBe("7653");
+			expect($F(f5).compose(f3)("7", "6")("5")).toBe("7653");
+			expect($F(f5).compose(f3)("7", "6", "5")).toBe("7653");
+			expect($F(f5).compose(f3)("7")("6", "5")).toBe("7653");
+			expect($F(f5).compose(f3)()("7")("6")("5")).toBe("7653");
+			expect($F(f5).compose(f3)()()("7")("6")("5")).toBe("7653");
 		});
 	});
 });

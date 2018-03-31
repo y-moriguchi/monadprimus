@@ -70,6 +70,18 @@
 		map: function(fn) {
 			var me = this;
 			return new List(fn(me._value), function() { return me._succ().map(fn); });
+		},
+		any: function(pred) {
+			var next;
+			for(next = this; next !== nil; next = next._succ()) {
+				if(pred(next._value)) {
+					return true;
+				}
+			}
+			return false;
+		},
+		every: function(pred) {
+			return !this.any(function(x) { return !pred(x); });
 		}
 	};
 	nil = {
@@ -87,6 +99,12 @@
 		},
 		map: function(_) {
 			return this;
+		},
+		any: function(_) {
+			return false;
+		},
+		every: function(pred) {
+			return true;
 		}
 	};
 	M.Nil = nil;
@@ -110,6 +128,15 @@
 			return new List(n, function() { return succ(n + 1); });
 		}
 		return succ(one);
+	};
+	M.L.range = function(start, end) {
+		function succ(n) {
+			return new List(n, function() { return n < end ? succ(n + 1) : nil; });
+		}
+		if(start > end) {
+			throw new Error("start must be less than or equal to end");
+		}
+		return succ(start);
 	};
 	M.T = function() {
 		var args = Array.prototype.slice.call(arguments);
