@@ -156,40 +156,13 @@
 		}
 		return func;
 	}
-	M.F.add = M.F(function(a, b) { return a + b; });
-	M.Cont = function(c) {
-		return {
-			bind: function(f) {
-				var me = this;
-				return M.Cont(function(k) {
-					return c(function(a) {
-						return f(a).runCont(k);
-					});
-				});
-			},
-			runCont: function(r) {
-				return c(r);
-			}
-		};
-	};
-	M.Cont.unit = function(value) {
-		return M.Cont(function(s) {
-			return s(value);
-		});
-	};
-	M.Cont.callcc = function(f) {
-		return M.Cont(function(k) {
-			return f(function(a) {
-				return M.Cont(function(_) {
-					return k(a);
-				});
-			}).runCont(k);
-		});
-	};
 	M.Identity = function(x) {
 		return {
 			bind: function(b) {
 				return b(x);
+			},
+			value: function() {
+				return x;
 			},
 			toString: function() {
 				return x + "";
@@ -211,6 +184,12 @@
 			},
 			runState: function(s) {
 				return func(s);
+			},
+			evalState: function(s) {
+				return this.runState(s)(0);
+			},
+			execState: function(s) {
+				return this.runState(s)(1);
 			}
 		};
 	}
@@ -269,7 +248,7 @@
 		St.lift = function(m) {
 			return St(function(s) {
 				return m.bind(function(a) {
-					return Type.unit(a, s);
+					return Type.unit(M.T(a, s));
 				});
 			});
 		};

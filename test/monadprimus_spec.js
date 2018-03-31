@@ -43,6 +43,7 @@ describe("MonadPrimus", function () {
 			expect(M.Just(3).bind(fn).bind(fm).value()).toBe(M.Just(3).bind(function(x) {
 				return fn(x).bind(fm)
 			}).value());
+			expect(M.Nothing.bind(M.Maybe.unit).isNothing()).toBe(M.Nothing.isNothing());
 			expect(M.Nothing.bind(fn).bind(fm).isNothing()).toBe(M.Nothing.bind(function(x) {
 				return fn(x).bind(fm)
 			}).isNothing());
@@ -83,6 +84,7 @@ describe("MonadPrimus", function () {
 			expect(M.Right(3).bind(fn).bind(fm).either(fl, fr)).toBe(M.Right(3).bind(function(x) {
 				return fn(x).bind(fm)
 			}).either(fl, fr));
+			expect(M.Left(3).bind(M.Either.unit).either(fl, fr)).toBe(M.Left(3).either(fl, fr));
 			expect(M.Left(3).bind(fn).bind(fm).either(fl, fr)).toBe(M.Left(3).bind(function(x) {
 				return fn(x).bind(fm)
 			}).either(fl, fr));
@@ -147,6 +149,119 @@ describe("MonadPrimus", function () {
 			expect($L(1, 2, 3).map(function(x) { return x * x; }).take()).toEqual([1, 4, 9]);
 			expect(M.Nil.map(function(x) { return x * x; }).take()).toEqual([]);
 			expect(M.L.N(1).map(function(x) { return x * x; }).take(5)).toEqual([1, 4, 9, 16, 25]);
+		});
+		it("monad rule", function () {
+			expect(M.L.unit(3).bind(fn).take()).toEqual(fn(3).take());
+			expect($L(1, 2, 3).bind(M.L.unit).take()).toEqual($L(1, 2, 3).take());
+			expect($L(1, 2, 3).bind(fn).bind(fm).take()).toEqual($L(1, 2, 3).bind(function(x) {
+				return fn(x).bind(fm)
+			}).take());
+			expect(M.Nil.bind(M.L.unit).take()).toEqual(M.Nil.take());
+			expect(M.Nil.bind(fn).bind(fm).take()).toEqual(M.Nil.bind(function(x) {
+				return fn(x).bind(fm)
+			}).take());
+			expect(M.Right(3).bind(fnil).bind(fm).take()).toEqual(M.Right(3).bind(function(x) {
+				return fnil(x).bind(fm)
+			}).take());
+			expect(M.Right(3).bind(fn).bind(fnil).take()).toEqual(M.Right(3).bind(function(x) {
+				return fn(x).bind(fnil)
+			}).take());
+		});
+	});
+
+	describe("testing Identity", function () {
+		function fn(x) { return M.Identity(x * 2); }
+		function fm(x) { return M.Identity(x + 2); }
+		it("bind", function () {
+			expect(M.Identity(1).bind(fn).value()).toEqual(2);
+		});
+		it("value", function () {
+			expect(M.Identity(1).value()).toEqual(1);
+		});
+		it("monad rule", function () {
+			expect(M.Identity.unit(3).bind(fn).value()).toEqual(fn(3).value());
+			expect(M.Identity(1).bind(M.Identity.unit).value()).toEqual(M.Identity(1).value());
+			expect(M.Identity(1).bind(fn).bind(fm).value()).toEqual(M.Identity(1).bind(function(x) {
+				return fn(x).bind(fm);
+			}).value());
+		});
+	});
+
+	describe("testing Tuple", function () {
+		it("tuple", function () {
+			expect($T(1, 2, 3)(0)).toBe(1);
+			expect($T(1, 2, 3)(1)).toBe(2);
+			expect($T(1, 2, 3)(2)).toBe(3);
+			expect($T(1, 2, 3)(3)).toBe(undefined);
+			expect($T(1, 2, 3).toArray()).toEqual([1, 2, 3]);
+			expect($T(1, 2, 3).toString()).toBe("(1,2,3)");
+			expect($T()(0)).toBe(undefined);
+			expect($T().toArray()).toEqual([]);
+			expect($T().toString()).toBe("()");
+		});
+	});
+
+	describe("testing State", function () {
+		function fn(x) { return M.State(function(s) { return $T(s + 2, s * 2) }); }
+		function fm(x) { return M.State(function(s) { return $T(s + 3, s * 3) }); }
+		it("bind", function () {
+			expect(M.State.unit(3).bind(fn).runState(4).toArray()).toEqual([6, 8]);
+		});
+		it("runState", function () {
+			expect(M.State.unit(3).runState(4).toArray()).toEqual([3, 4]);
+		});
+		it("evalState", function () {
+			expect(M.State.unit(3).evalState(4)).toBe(3);
+		});
+		it("execState", function () {
+			expect(M.State.unit(3).execState(4)).toBe(4);
+		});
+		it("getState", function () {
+			expect(M.State.getState.runState(4).toArray()).toEqual([4, 4]);
+		});
+		it("putState", function () {
+			expect(M.State.putState(5).runState(4).toArray()).toEqual([undefined, 5]);
+		});
+		it("modify", function () {
+			expect(M.State.modify(function(x) { return x * 2; }).runState(4).toArray()).toEqual([undefined, 8]);
+		});
+		it("monad rule", function () {
+			expect(M.State.unit(3).bind(fn).runState(4).toArray()).toEqual(fn(3).runState(4).toArray());
+			expect(fn(3).bind(M.State.unit).runState(4).toArray()).toEqual(fn(3).runState(4).toArray());
+			expect(fm(3).bind(fn).bind(fm).runState(4).toArray()).toEqual(fm(3).bind(function(x) {
+				return fn(x).bind(fm);
+			}).runState(4).toArray());
+		});
+	});
+
+	describe("testing StateT 1", function () {
+		var St = M.StateT(M.Identity);
+		function fn(x) { return St(function(s) { return M.Identity($T(s + 2, s * 2)); }); }
+		function fm(x) { return St(function(s) { return M.Identity($T(s + 3, s * 3)); }); }
+		it("bind", function () {
+			expect(St.unit(3).bind(fn).runStateT(4).value().toArray()).toEqual([6, 8]);
+		});
+		it("runState", function () {
+			expect(St.unit(3).runStateT(4).value().toArray()).toEqual([3, 4]);
+		});
+		it("getState", function () {
+			expect(St.getState.runStateT(4).value().toArray()).toEqual([4, 4]);
+		});
+		it("putState", function () {
+			expect(St.putState(5).runStateT(4).value().toArray()).toEqual([undefined, 5]);
+		});
+		it("modify", function () {
+			expect(St.modify(function(x) { return x * 2; }).runStateT(4).value().toArray()).toEqual([undefined, 8]);
+		});
+		it("lift", function () {
+			expect(St.lift(M.Identity(5)).runStateT(4).value().toArray()).toEqual([5, 4]);
+		});
+		it("monad rule", function () {
+			expect(St.unit(3).bind(fn).runStateT(4).value().toArray()).toEqual(fn(3).runStateT(4).value().toArray());
+			expect(fn(3).bind(St.unit).runStateT(4).value().toArray()).toEqual(fn(3).runStateT(4).value().toArray());
+			expect(fm(3).bind(fn).bind(fm).runStateT(4).value().toArray()).toEqual(fm(3).bind(function(x) {
+				return fn(x).bind(fm);
+			}).runStateT(4).value().toArray());
 		});
 	});
 });
