@@ -320,6 +320,31 @@ describe("MonadPrimus", function () {
 			]);
 			expect(M.L.combination(["a", "b", "c", "d"], 0).take().map(function(x) { return x.toArray(); })).toEqual([[]]);
 		});
+		it("Z", function () {
+			expect(M.L.Z.take(6)).toEqual([0, 1, -1, 2, -2, 3]);
+		});
+		it("power", function () {
+			expect(M.L.power(M.L("a", "b"), 3).take().map(function(x) { return x.toArray(); })).toEqual([
+				["a", "a", "a"],
+				["b", "a", "a"],
+				["a", "b", "a"],
+				["a", "a", "b"],
+				["b", "b", "a"],
+				["b", "a", "b"],
+				["a", "b", "b"],
+				["b", "b", "b"]
+			]);
+			expect(M.L.power(M.Nil, 3).take().map(function(x) { return x.toArray(); })).toEqual([]);
+		});
+		it("map many arguments", function () {
+			expect(M.L.map(function(x, y, z) { return x + y + z; }, $L(1, 2, 3), $L(3, 4, 5), $L(6, 7)).take()).toEqual([10, 13]);
+			expect(M.L.map(function(x, y, z) { return x + y + z; }, $L(1, 2, 3), M.Nil, $L(6, 7)).take()).toEqual([]);
+			expect(M.L.map(function(x) { return x * x; }, $L(1, 2, 3)).take()).toEqual([1, 4, 9]);
+			expect(M.L.map(function(x, y) { return x * y; }, M.L.N(1), M.L.N(2)).take(5)).toEqual([2, 6, 12, 20, 30]);
+			expect(M.L.map(function(x, y) { return x * y; }, M.L.N(1), $L(3, 4, 5)).take()).toEqual([3, 8, 15]);
+			expect(function() { M.L.map(); }).toThrow();
+			expect(function() { M.L.map(function(x) { return x * x; }); }).toThrow();
+		});
 		it("monad rule", function () {
 			expect(M.L.unit(3).bind(fn).take()).toEqual(fn(3).take());
 			expect($L(1, 2, 3).bind(M.L.unit).take()).toEqual($L(1, 2, 3).take());

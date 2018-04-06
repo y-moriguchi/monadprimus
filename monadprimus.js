@@ -273,6 +273,10 @@
 		}
 		return succ(one);
 	};
+	function successorZ(n) {
+		return List(n, Memo(function() { return successorZ(n > 0 ? -n : -n + 1); }));
+	}
+	M.L.Z = successorZ(0);
 	M.L.range = function(start, end) {
 		function succ(n) {
 			return List(n, Memo(function() { return n < end ? succ(n + 1) : nil; }));
@@ -330,6 +334,31 @@
 			return nil;
 		}
 		return next(directProductIndex(args.length, 0));
+	};
+	M.L.power = function(list, n) {
+		var args = new Array(n),
+			i;
+		for(i = 0; i < n; i++) {
+			args[i] = list;
+		}
+		return M.L.product.apply(null, args);
+	};
+	M.L.map = function(fn, /* args */) {
+		var args = Array.prototype.slice.call(arguments, 1),
+			vals = [],
+			rests = [fn],
+			i;
+		if(arguments.length <= 1) {
+			throw new Error("at least one list required");
+		}
+		for(i = 0; i < args.length; i++) {
+			if(args[i].isNull()) {
+				return nil;
+			}
+			vals.push(args[i].value());
+			rests.push(args[i].rest());
+		}
+		return new List(fn.apply(null, vals), Memo(function() { return M.L.map.apply(null, rests); }));
 	};
 	M.T = function() {
 		var args = Array.prototype.slice.call(arguments);
