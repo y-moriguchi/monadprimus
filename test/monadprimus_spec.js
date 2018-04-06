@@ -102,6 +102,18 @@ describe("MonadPrimus", function () {
 		function fm(x) { return $L(x + 2, x + 3); }
 		function fl(x) { return $L(x * 2); }
 		function fnil(x) { return M.Nil; }
+		it("at", function () {
+			expect($L(1, 2)(0)).toBe(1);
+			expect($L(1, 2)(1)).toBe(2);
+			expect($L(1, 2)(2)).toBe(undefined);
+			expect(M.Nil(0)).toBe(undefined);
+			expect(M.L.N(1)(0)).toBe(1);
+			expect(M.L.N(1)(100)).toBe(101);
+			expect(function() { $L(1, 2)(-1) }).toThrow();
+			expect(function() { $L(1, 2)(9007199254740992) }).toThrow();
+			expect(function() { M.Nil(-1) }).toThrow();
+			expect(function() { M.Nil(9007199254740992) }).toThrow();
+		});
 		it("bind", function () {
 			expect($L(1, 2).bind(fn).take()).toEqual([2, 3, 4, 6]);
 			expect($L(1, 2).bind(fl).take()).toEqual([2, 4]);
@@ -150,14 +162,14 @@ describe("MonadPrimus", function () {
 			expect(M.Nil.map(function(x) { return x * x; }).take()).toEqual([]);
 			expect(M.L.N(1).map(function(x) { return x * x; }).take(5)).toEqual([1, 4, 9, 16, 25]);
 		});
-		it("any", function () {
-			expect($L(1, 4, 5).any(function(x) { return x % 2 === 0; })).toBe(true);
-			expect($L(1, 3, 6).any(function(x) { return x % 2 === 0; })).toBe(true);
-			expect($L(2, 3, 6).any(function(x) { return x % 2 === 0; })).toBe(true);
-			expect($L(1, 3, 5).any(function(x) { return x % 2 === 0; })).toBe(false);
-			expect(M.Nil.any(function(x) { return x % 2 === 0; })).toBe(false);
-			expect($L().any(function(x) { return x % 2 === 0; })).toBe(false);
-			expect(M.L.N(1).any(function(x) { return x % 5 === 0; })).toBe(true);
+		it("some", function () {
+			expect($L(1, 4, 5).some(function(x) { return x % 2 === 0; })).toBe(true);
+			expect($L(1, 3, 6).some(function(x) { return x % 2 === 0; })).toBe(true);
+			expect($L(2, 3, 6).some(function(x) { return x % 2 === 0; })).toBe(true);
+			expect($L(1, 3, 5).some(function(x) { return x % 2 === 0; })).toBe(false);
+			expect(M.Nil.some(function(x) { return x % 2 === 0; })).toBe(false);
+			expect($L().some(function(x) { return x % 2 === 0; })).toBe(false);
+			expect(M.L.N(1).some(function(x) { return x % 5 === 0; })).toBe(true);
 		});
 		it("every", function () {
 			expect($L(1, 4, 5).every(function(x) { return x % 2 === 1; })).toBe(false);

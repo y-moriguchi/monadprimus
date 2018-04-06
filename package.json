@@ -1,0 +1,27 @@
+{
+  "name": "monadprimus",
+  "version": "0.0.0",
+  "description": "JavaScript monad library",
+  "main": "monadprimus.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/y-moriguchi/monadprimus.git"
+  },
+  "keywords": [
+    "monad",
+    "delay-list",
+    "functional"
+  ],
+  "author": "Yuichiro MORIGUCHI",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/y-moriguchi/monadprimus/issues"
+  },
+  "homepage": "https://github.com/y-moriguchi/monadprimus#readme"
+}

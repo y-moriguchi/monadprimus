@@ -3,6 +3,24 @@ MonadPrimus is a library of functional programming.
 MonadPrimus includes lazy evaluation list, tuple, function wrapper which can curry and compose,
 Maybe and Either monad and so on.
 
+## How to use
+
+### node.js
+Install MonadPrimus.js:
+```
+npm install monadprimus
+```
+
+Use module:
+```js
+var R = require('monadprimus');
+```
+
+### Browser
+```html
+<script src="monadprimus.js"></script>
+```
+
 ## Examples
 
 ### Lazy Evaluation List

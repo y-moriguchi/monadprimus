@@ -9,82 +9,128 @@
 (function(root) {
 	var M = {},
 		TUPLE_ID = {},
+		UNMEMOED = {},
 		undef = void 0,
+		maxIndex = 9007199254740991,
 		nil,
 		Nothing;
-	function List(value, succ) {
-		this._value = value;
-		this._succ = succ;
+	function addMethod(obj, extend) {
+		var i;
+		for(i in extend) {
+			if(extend.hasOwnProperty(i)) {
+				obj[i] = extend[i];
+			}
+		}
 	}
-	List.prototype = {
-		bind: function(b) {
-			var me = this,
-				mapped = b(me._value);
-			function getNext(succ) {
-				var next = succ(),
-					meNext;
-				if(next !== nil) {
-					return new List(next._value, function() { return getNext(next._succ); });;
-				} else if((meNext = me._succ()) !== nil) {
-					return meNext.bind(b);
-				} else {
-					return nil;
-				}
+	function Memo(thunk) {
+		var memoed = UNMEMOED;
+		return function() {
+			if(memoed === UNMEMOED) {
+				memoed = thunk();
 			}
-			return mapped === nil ? nil : new List(mapped._value, function() { return getNext(mapped._succ); });
-		},
-		take: function(n) {
-			var res = [],
-				next = this,
-				i;
-			for(i = 0; (n === undef || i < n) && next !== nil; i++) {
-				res.push(next._value);
-				next = next._succ();
+			return memoed;
+		};
+	}
+	function List(value, succ) {
+		function at0(index, lst) {
+			return index > 0 ? at0(index - 1, lst.rest()) : lst.value();
+		}
+		function at(index) {
+			console.log(maxIndex);
+			if(index < 0 || index > maxIndex) {
+				throw new Error("index out of bounds");
 			}
-			return res;
-		},
-		filter: function(pred) {
-			function filterNext(succ) {
-				var next;
-				for(next = succ; next !== nil; next = next._succ()) {
-					if(pred(next._value)) {
-						return new List(next._value, function() { return filterNext(next._succ()); });
+			return index > 0 ? at0(index - 1, succ()) : value;
+		}
+		addMethod(at, {
+			value: function() {
+				return value;
+			},
+			rest: function() {
+				return succ();
+			},
+			bind: function(b) {
+				var me = this,
+					mapped = b(me.value());
+				function getNext(succ) {
+					var next = succ(),
+						meNext;
+					if(next !== nil) {
+						return new List(next.value(), Memo(function() { return getNext(next.rest); }));;
+					} else if((meNext = me.rest()) !== nil) {
+						return meNext.bind(b);
+					} else {
+						return nil;
 					}
 				}
-				return nil;
-			}
-			return filterNext(this);
-		},
-		concat: function(list) {
-			var me = this;
-			function concatList(succ) {
-				var next = succ();
-				if(next !== nil) {
-					return new List(next._value, function() { return concatList(next._succ); });;
-				} else {
-					return list;
+				return mapped === nil ? nil : new List(mapped.value(), Memo(function() { return getNext(mapped.rest); }));
+			},
+			take: function(n) {
+				var res = [],
+					next = this,
+					i;
+				for(i = 0; (n === undef || i < n) && next !== nil; i++) {
+					res.push(next.value());
+					next = next.rest();
 				}
-			}
-			return list === nil ? me : new List(me._value, function() { return concatList(me._succ); });
-		},
-		map: function(fn) {
-			var me = this;
-			return new List(fn(me._value), function() { return me._succ().map(fn); });
-		},
-		any: function(pred) {
-			var next;
-			for(next = this; next !== nil; next = next._succ()) {
-				if(pred(next._value)) {
-					return true;
+				return res;
+			},
+			filter: function(pred) {
+				function filterNext(succ) {
+					var next;
+					for(next = succ; next !== nil; next = next.rest()) {
+						if(pred(next.value())) {
+							return new List(next.value(), Memo(function() { return filterNext(next.rest()); }));
+						}
+					}
+					return nil;
 				}
+				return filterNext(this);
+			},
+			concat: function(list) {
+				var me = this;
+				function concatList(succ) {
+					var next = succ();
+					if(next !== nil) {
+						return new List(next.value(), function() { return concatList(next.rest); });;
+					} else {
+						return list;
+					}
+				}
+				return list === nil ? me : new List(me.value(), function() { return concatList(me.rest); });
+			},
+			map: function(fn) {
+				var me = this;
+				return new List(fn(me.value()), Memo(function() { return me.rest().map(fn); }));
+			},
+			some: function(pred) {
+				var next;
+				for(next = this; next !== nil; next = next.rest()) {
+					if(pred(next.value())) {
+						return true;
+					}
+				}
+				return false;
+			},
+			every: function(pred) {
+				return !this.some(function(x) { return !pred(x); });
 			}
-			return false;
-		},
-		every: function(pred) {
-			return !this.any(function(x) { return !pred(x); });
+		});
+		return at;
+	}
+	nil = function at(index) {
+		if(index < 0 || index > maxIndex) {
+			throw new Error("index out of bounds");
 		}
+		return undef;
 	};
-	nil = {
+	addMethod(nil, {
+		value: function() {
+			return undef;
+		},
+		rest: function() {
+			return this;
+		},
 		bind: function(b) {
 			return this;
 		},
@@ -100,13 +146,13 @@
 		map: function(_) {
 			return this;
 		},
-		any: function(_) {
+		some: function(_) {
 			return false;
 		},
 		every: function(pred) {
 			return true;
 		}
-	};
+	});
 	M.Nil = nil;
 	M.L = function() {
 		var args = Array.prototype.slice.call(arguments),
@@ -114,24 +160,24 @@
 			i;
 		for(i = args.length - 1; i >= 0; i--) {
 			res = (function(res, i) {
-				return new List(args[i], function() { return res; })
+				return List(args[i], Memo(function() { return res; }))
 			})(res, i);
 		}
 		return res;
 	};
 	M.L.Nil = nil;
 	M.L.unit = function(x) {
-		return new List(x, function() { return nil; });
+		return List(x, function() { return nil; });
 	};
 	M.L.N = function(one) {
 		function succ(n) {
-			return new List(n, function() { return succ(n + 1); });
+			return List(n, Memo(function() { return succ(n + 1); }));
 		}
 		return succ(one);
 	};
 	M.L.range = function(start, end) {
 		function succ(n) {
-			return new List(n, function() { return n < end ? succ(n + 1) : nil; });
+			return List(n, Memo(function() { return n < end ? succ(n + 1) : nil; }));
 		}
 		if(start > end) {
 			throw new Error("start must be less than or equal to end");
