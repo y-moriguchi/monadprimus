@@ -22,6 +22,63 @@
 			}
 		}
 	}
+	function permutationIndexWithDuplicate(size, num, filter) {
+		function perm0(lst) {
+			return {
+				value: function() {
+					return [].concat(lst);
+				},
+				next: function() {
+					var nl = [].concat(lst),
+						i;
+					for(i = nl.length - 1; i >= 0;) {
+						if(nl[i] < size) {
+							nl[i]++;
+							if(filter(nl)) {
+								return perm0(nl);
+							} else {
+								i = nl.length - 1;
+							}
+						} else {
+							nl[i--] = 0;
+						}
+					}
+					return null;
+				}
+			};
+		}
+		var arr = new Array(num),
+			ret,
+			i;
+		for(i = 0; i < arr.length; i++) {
+			arr[i] = 0;
+		}
+		ret = perm0(arr);
+		return filter(arr) ? ret : ret.next();
+	}
+	function uniqueSeq(comparator) {
+		return function(arr) {
+			var i, j;
+			for(i = 0; i < arr.length; i++) {
+				for(j = i + 1; j < arr.length; j++) {
+					if(comparator(arr[i], arr[j])) {
+						return false;
+					}
+				}
+			}
+			return true;
+		};
+	}
+	function permutationIndex(size, num) {
+		return permutationIndexWithDuplicate(size, num, uniqueSeq(function(a, b) {
+			return a === b;
+		}));
+	}
+	function combinationIndex(size, num) {
+		return permutationIndexWithDuplicate(size, num, uniqueSeq(function(a, b) {
+			return a >= b;
+		}));
+	}
 	function Memo(thunk) {
 		var memoed = UNMEMOED;
 		return function() {
@@ -36,7 +93,6 @@
 			return index > 0 ? at0(index - 1, lst.rest()) : lst.value();
 		}
 		function at(index) {
-			console.log(maxIndex);
 			if(index < 0 || index > maxIndex) {
 				throw new Error("index out of bounds");
 			}
@@ -183,6 +239,32 @@
 			throw new Error("start must be less than or equal to end");
 		}
 		return succ(start);
+	};
+	function permutationSuccessor(arr, num, index) {
+		var val = [],
+			indexArr = index.value(),
+			i;
+		for(i = 0; i < num; i++) {
+			val.push(arr[indexArr[i]]);
+		}
+		return List(M.T.apply(null, val), Memo(function() {
+			var nxt = index.next()
+			return nxt ? permutationSuccessor(arr, num, nxt) : nil;
+		}));
+	}
+	M.L.permutation = function(arr, num) {
+		var n = num === undef ? arr.length : num;
+		if(arr.length < n) {
+			throw new Error("array size must be less or equal than number");
+		}
+		return permutationSuccessor(arr, n, permutationIndex(arr.length - 1, n));
+	};
+	M.L.combination = function(arr, num) {
+		var n = num === undef ? arr.length : num;
+		if(arr.length < n) {
+			throw new Error("array size must be less or equal than number");
+		}
+		return permutationSuccessor(arr, n, combinationIndex(arr.length - 1, n));
 	};
 	M.T = function() {
 		var args = Array.prototype.slice.call(arguments);

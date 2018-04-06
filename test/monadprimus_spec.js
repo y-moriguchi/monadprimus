@@ -185,6 +185,83 @@ describe("MonadPrimus", function () {
 			expect(M.L.range(1, 1).take()).toEqual([1]);
 			expect(function() { M.L.range(2, 1) }).toThrow();
 		});
+		it("permutation", function () {
+			expect(M.L.permutation(["a", "b", "c", "d"], 3).take().map(function(x) { return x.toArray(); })).toEqual([
+				["a", "b", "c"],
+				["a", "b", "d"],
+				["a", "c", "b"],
+				["a", "c", "d"],
+				["a", "d", "b"],
+				["a", "d", "c"],
+				["b", "a", "c"],
+				["b", "a", "d"],
+				["b", "c", "a"],
+				["b", "c", "d"],
+				["b", "d", "a"],
+				["b", "d", "c"],
+				["c", "a", "b"],
+				["c", "a", "d"],
+				["c", "b", "a"],
+				["c", "b", "d"],
+				["c", "d", "a"],
+				["c", "d", "b"],
+				["d", "a", "b"],
+				["d", "a", "c"],
+				["d", "b", "a"],
+				["d", "b", "c"],
+				["d", "c", "a"],
+				["d", "c", "b"]
+			]);
+			expect(M.L.permutation(["a", "b", "c"]).take().map(function(x) { return x.toArray(); })).toEqual([
+				["a", "b", "c"],
+				["a", "c", "b"],
+				["b", "a", "c"],
+				["b", "c", "a"],
+				["c", "a", "b"],
+				["c", "b", "a"]
+			]);
+			expect(M.L.permutation(["a", "b", "c", "d"], 2).take().map(function(x) { return x.toArray(); })).toEqual([
+				["a", "b"],
+				["a", "c"],
+				["a", "d"],
+				["b", "a"],
+				["b", "c"],
+				["b", "d"],
+				["c", "a"],
+				["c", "b"],
+				["c", "d"],
+				["d", "a"],
+				["d", "b"],
+				["d", "c"]
+			]);
+			expect(M.L.permutation(["a", "b", "c", "d"], 1).take().map(function(x) { return x.toArray(); })).toEqual([
+				["a"], ["b"], ["c"], ["d"]
+			]);
+			expect(M.L.permutation(["a", "b", "c", "d"], 0).take().map(function(x) { return x.toArray(); })).toEqual([[]]);
+		});
+		it("combination", function () {
+			expect(M.L.combination(["a", "b", "c", "d"], 3).take().map(function(x) { return x.toArray(); })).toEqual([
+				["a", "b", "c"],
+				["a", "b", "d"],
+				["a", "c", "d"],
+				["b", "c", "d"]
+			]);
+			expect(M.L.combination(["a", "b", "c"]).take().map(function(x) { return x.toArray(); })).toEqual([
+				["a", "b", "c"]
+			]);
+			expect(M.L.combination(["a", "b", "c", "d"], 2).take().map(function(x) { return x.toArray(); })).toEqual([
+				["a", "b"],
+				["a", "c"],
+				["a", "d"],
+				["b", "c"],
+				["b", "d"],
+				["c", "d"]
+			]);
+			expect(M.L.combination(["a", "b", "c", "d"], 1).take().map(function(x) { return x.toArray(); })).toEqual([
+				["a"], ["b"], ["c"], ["d"]
+			]);
+			expect(M.L.combination(["a", "b", "c", "d"], 0).take().map(function(x) { return x.toArray(); })).toEqual([[]]);
+		});
 		it("monad rule", function () {
 			expect(M.L.unit(3).bind(fn).take()).toEqual(fn(3).take());
 			expect($L(1, 2, 3).bind(M.L.unit).take()).toEqual($L(1, 2, 3).take());
