@@ -239,6 +239,64 @@ describe("MonadPrimus", function () {
 			]);
 			expect(M.L.permutation(["a", "b", "c", "d"], 0).take().map(function(x) { return x.toArray(); })).toEqual([[]]);
 		});
+		it("product", function () {
+			expect(M.L.product(M.L(2, 4, 6), M.L(3, 6), M.L(4, 8)).take().map(function(x) { return x.toArray(); })).toEqual([
+				[2, 3, 4],
+				[4, 3, 4],
+				[2, 6, 4],
+				[2, 3, 8],
+				[6, 3, 4],
+				[4, 6, 4],
+				[4, 3, 8],
+				[2, 6, 8],
+				[6, 6, 4],
+				[6, 3, 8],
+				[4, 6, 8],
+				[6, 6, 8]
+			]);
+			expect(M.L.product(M.L(2, 4, 6), M.L(3, 6)).take().map(function(x) { return x.toArray(); })).toEqual([
+				[2, 3],
+				[4, 3],
+				[2, 6],
+				[6, 3],
+				[4, 6],
+				[6, 6]
+			]);
+			expect(M.L.product(M.L(2, 4, 6), M.L(3, 6), M.L(4)).take().map(function(x) { return x.toArray(); })).toEqual([
+				[2, 3, 4],
+				[4, 3, 4],
+				[2, 6, 4],
+				[6, 3, 4],
+				[4, 6, 4],
+				[6, 6, 4]
+			]);
+			expect(M.L.product(M.L(2, 4, 6), M.Nil, M.L(4)).take().map(function(x) { return x.toArray(); })).toEqual([]);
+			expect(M.L.product(M.L.N(1), M.L.N(1)).take(10).map(function(x) { return x.toArray(); })).toEqual([
+				[1, 1],
+				[2, 1],
+				[1, 2],
+				[3, 1],
+				[2, 2],
+				[1, 3],
+				[4, 1],
+				[3, 2],
+				[2, 3],
+				[1, 4]
+			]);
+			expect(M.L.product(M.L.N(1), M.L(1, 2)).take(10).map(function(x) { return x.toArray(); })).toEqual([
+				[1, 1],
+				[2, 1],
+				[1, 2],
+				[3, 1],
+				[2, 2],
+				[4, 1],
+				[3, 2],
+				[5, 1],
+				[4, 2],
+				[6, 1]
+			]);
+			expect(M.L.product(M.L.N(1), M.Nil).take(10).map(function(x) { return x.toArray(); })).toEqual([]);
+		});
 		it("combination", function () {
 			expect(M.L.combination(["a", "b", "c", "d"], 3).take().map(function(x) { return x.toArray(); })).toEqual([
 				["a", "b", "c"],

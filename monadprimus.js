@@ -79,6 +79,42 @@
 			return a >= b;
 		}));
 	}
+	function directProductIndex(size, sum) {
+		function make(list, stack, flag) {
+			return {
+				value: function() {
+					return [].concat(list);
+				},
+				next: function() {
+					var nl = [].concat(list),
+						ns = [].concat(stack),
+						i;
+					nl[nl.length - 1] = ns[nl.length - 1] = 0;
+					for(i = nl.length - 2; i >= 0; i--) {
+						if(nl[i] > 0) {
+							nl[i]--;
+							nl[i + 1] = ns[i + 1] = ns[i] - nl[i];
+							return make(nl, ns, flag);
+						} else {
+							nl[i] = ns[i] = 0;
+						}
+					}
+					return flag ? directProductIndex(size, sum + 1, false) : null;
+				},
+				setOk: function() {
+					return make(list, stack, true);
+				}
+			};
+		}
+		var list = new Array(size),
+			stack = new Array(size),
+			i;
+		for(i = 1; i < size; i++) {
+			list[i] = stack[i] = 0;
+		}
+		list[0] = stack[0] = sum;
+		return make(list, stack, false);
+	}
 	function Memo(thunk) {
 		var memoed = UNMEMOED;
 		return function() {
@@ -170,6 +206,9 @@
 			},
 			every: function(pred) {
 				return !this.some(function(x) { return !pred(x); });
+			},
+			isNull: function(index) {
+				return index === undef || index === 0 ? false : this.rest().isNull(index - 1);
 			}
 		});
 		return at;
@@ -206,6 +245,9 @@
 			return false;
 		},
 		every: function(pred) {
+			return true;
+		},
+		isNull: function(index) {
 			return true;
 		}
 	});
@@ -266,23 +308,48 @@
 		}
 		return permutationSuccessor(arr, n, combinationIndex(arr.length - 1, n));
 	};
+	M.L.product = function() {
+		var args = Array.prototype.slice.call(arguments);
+		function next(index) {
+			var val,
+				nxt,
+				indexArr,
+				i;
+			outer: for(nxt = index; nxt; nxt = nxt.next()) {
+				for(val = [], i = 0; i < args.length; i++) {
+					indexArr = nxt.value();
+					if(args[i].isNull(indexArr[i])) {
+						continue outer;
+					}
+					val.push(args[i](indexArr[i]));
+				}
+				return List(M.T.apply(null, val), Memo(function() {
+					return next(nxt.setOk().next());
+				}));
+			}
+			return nil;
+		}
+		return next(directProductIndex(args.length, 0));
+	};
 	M.T = function() {
 		var args = Array.prototype.slice.call(arguments);
 		function getTuple(n) {
 			return args[n];
 		}
-		getTuple.toString = function() {
-			var res = "(",
-				i;
-			for(i = 0; i < args.length; i++) {
-				res += (i > 0 ? "," : "") + args[i];
-			}
-			return res + ")";
-		};
-		getTuple.toArray = function() {
-			return [].concat(args);
-		};
-		getTuple["@tupleId@"] = TUPLE_ID;
+		addMethod(getTuple, {
+			toString: function() {
+				var res = "(",
+					i;
+				for(i = 0; i < args.length; i++) {
+					res += (i > 0 ? "," : "") + args[i];
+				}
+				return res + ")";
+			},
+			toArray: function() {
+				return [].concat(args);
+			},
+			"@tupleId@": TUPLE_ID
+		});
 		return getTuple;
 	};
 	M.T.isTuple = function(obj) {
