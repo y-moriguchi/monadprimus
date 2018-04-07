@@ -126,7 +126,14 @@
 	}
 	function List(value, succ) {
 		function at0(index, lst) {
-			return index > 0 ? at0(index - 1, lst.rest()) : lst.value();
+			var i,
+				nxt = lst;
+			for(i = index; i > 0; i--, lst = lst.rest()) {
+				if(lst.isNull()) {
+					return undef;
+				}
+			}
+			return lst.value();
 		}
 		function at(index) {
 			if(index < 0 || index > maxIndex) {
