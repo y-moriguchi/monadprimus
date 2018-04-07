@@ -191,12 +191,12 @@
 				function concatList(succ) {
 					var next = succ();
 					if(next !== nil) {
-						return new List(next.value(), function() { return concatList(next.rest); });;
+						return new List(next.value(), Memo(function() { return concatList(next.rest); }));
 					} else {
 						return list;
 					}
 				}
-				return list === nil ? me : new List(me.value(), function() { return concatList(me.rest); });
+				return list === nil ? me : new List(me.value(), Memo(function() { return concatList(me.rest); }));
 			},
 			map: function(fn) {
 				var me = this;
