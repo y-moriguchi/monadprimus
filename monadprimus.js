@@ -343,7 +343,7 @@
 		}
 		return M.L.product.apply(null, args);
 	};
-	M.L.map = function(fn, /* args */) {
+	M.L.map = function(fn /* ,args */) {
 		var args = Array.prototype.slice.call(arguments, 1),
 			vals = [],
 			rests = [fn],
