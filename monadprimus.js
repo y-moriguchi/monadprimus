@@ -9,11 +9,23 @@
 (function(root) {
 	var M = {},
 		TUPLE_ID = {},
+		FUNCTION_ID = {},
+		PLACEHOLDER_ID = {},
 		UNMEMOED = {},
+		placeholderFlyweight = {},
 		undef = void 0,
 		maxIndex = 9007199254740991,
 		nil,
 		Nothing;
+	function arrayIndexOf(array, element) {
+		var i;
+		for(i = 0; i < array.length; i++) {
+			if(array[i] === element) {
+				return i;
+			}
+		}
+		return -1;
+	}
 	function addMethod(obj, extend) {
 		var i;
 		for(i in extend) {
@@ -141,7 +153,8 @@
 			}
 			return index > 0 ? at0(index - 1, succ()) : value;
 		}
-		addMethod(at, {
+		return {
+			at: at,
 			value: function() {
 				return value;
 			},
@@ -216,17 +229,19 @@
 			},
 			isNull: function(index) {
 				return index === undef || index === 0 ? false : this.rest().isNull(index - 1);
+			},
+			multiply: function(b) {
+				return this.bind(b);
 			}
-		});
-		return at;
+		};
 	}
-	nil = function at(index) {
-		if(index < 0 || index > maxIndex) {
-			throw new Error("index out of bounds");
-		}
-		return undef;
-	};
-	addMethod(nil, {
+	nil = {
+		at: function at(index) {
+			if(index < 0 || index > maxIndex) {
+				throw new Error("index out of bounds");
+			}
+			return undef;
+		},
 		value: function() {
 			return undef;
 		},
@@ -256,8 +271,11 @@
 		},
 		isNull: function(index) {
 			return true;
+		},
+		multiply: function(b) {
+			return this.bind(b);
 		}
-	});
+	};
 	M.Nil = nil;
 	M.L = function() {
 		var args = Array.prototype.slice.call(arguments),
@@ -332,7 +350,7 @@
 					if(args[i].isNull(indexArr[i])) {
 						continue outer;
 					}
-					val.push(args[i](indexArr[i]));
+					val.push(args[i].at(indexArr[i]));
 				}
 				return List(M.T.apply(null, val), Memo(function() {
 					return next(nxt.setOk().next());
@@ -391,13 +409,69 @@
 	M.T.isTuple = function(obj) {
 		return obj["@tupleId@"] === TUPLE_ID;
 	};
+	function placeholder(n) {
+		return {
+			_x : n,
+			index: function() {
+				return n - 1;
+			},
+			"@placeholderId@": PLACEHOLDER_ID
+		};
+	};
 	M.F = function(fn, arity) {
 		var func,
 			len = arity === undef ? fn.length : arity;
+		function assignArgs(args, argsnew) {
+			var result = [].concat(args),
+				i,
+				index;
+			for(i = 0; i < argsnew.length; i++) {
+				index = arrayIndexOf(args, M.$n(i + 1));
+				if(index < 0) {
+					result.push(argsnew[i]);
+				} else {
+					result[index] = argsnew[i];
+				}
+			}
+			return result;
+		}
+		function shiftPlaceholder(args) {
+			var collect = [],
+				argsnew = [].concat(args),
+				i,
+				j;
+			for(i = 0; i < args.length; i++) {
+				if(args[i]["@placeholderId@"] === PLACEHOLDER_ID) {
+					for(j = 0; j <= collect.length; j++) {
+						if(j === collect.length || args[i].index() < collect[j].place.index()) {
+							collect.splice(j, 0, {
+								orgIndex: i,
+								place: args[i]
+							});
+							break;
+						}
+					}
+				}
+			}
+			for(i = 0; i < collect.length; i++) {
+				argsnew[collect[i].orgIndex] = M.$n(i + 1);
+			}
+			return argsnew;
+		}
+		function existsPlaceholder(args) {
+			var i;
+			for(i = 0; i < args.length; i++) {
+				if(args[i]["@placeholderId@"] === PLACEHOLDER_ID) {
+					return true;
+				}
+			}
+			return false;
+		}
 		function partial(args, action) {
 			return function() {
-				var argsnew = args.concat(Array.prototype.slice.call(arguments));
-				if(argsnew.length < len) {
+				var argsnew = assignArgs(args, arguments);
+				argsnew = shiftPlaceholder(argsnew);
+				if(argsnew.length < len || existsPlaceholder(argsnew)) {
 					return M.F(partial(argsnew, action));
 				} else {
 					var res = fn.apply(null, argsnew);
@@ -406,14 +480,70 @@
 			};
 		}
 		func = partial([]);
-		func.compose = function(b) {
-			if(b.length !== 1) {
-				throw new Error("arity of function to compose must be 1");
-			}
-			return M.F(partial([], b), fn.length);
-		}
+		addMethod(func, {
+			pipe: function(b) {
+				var f;
+				if(typeof b !== "function") {
+					throw new Error("argument must be a function");
+				} else if(b.length !== 1 && b.argumentsLength() !== 1) {
+					throw new Error("arity of function to compose must be 1");
+				} else if(b === M.F.unit) {
+					return this;
+				} else {
+					f = b["@functionId@"] === FUNCTION_ID ? b.value() : b;
+					return M.F(partial([], b), fn.length);
+				}
+			},
+			argumentsLength: function() {
+				return arity;
+			},
+			multiply: function(b) {
+				return this.pipe(b);
+			},
+			value: function() {
+				return func;
+			},
+			"@functionId@": FUNCTION_ID
+		});
 		return func;
+	};
+	function _id(x) {
+		return x;
 	}
+	M.F.unit = M.F.I = function(x) {
+		return x;
+	};
+	M.$n = function(n) {
+		if(placeholderFlyweight[n] === undef) {
+			placeholderFlyweight[n] = placeholder(n);
+		}
+		return placeholderFlyweight[n];
+	};
+	M.$1 = M.$n(1);
+	M.$2 = M.$n(2);
+	M.$3 = M.$n(3);
+	M.$4 = M.$n(4);
+	M.$5 = M.$n(5);
+	M.$6 = M.$n(6);
+	M.$7 = M.$n(7);
+	M.$8 = M.$n(8);
+	M.$9 = M.$n(9);
+	addMethod(M.F.unit, {
+		pipe: function(b) {
+			var f = b["@functionId@"] === FUNCTION_ID ? b : M.F(b);
+			return b === M.F.unit ? M.F.unit : f;
+		},
+		argumentLength: function() {
+			return 1;
+		},
+		multiply: function(b) {
+			return this.pipe(b);
+		},
+		value: function() {
+			return _id;
+		},
+		"@functionId@": FUNCTION_ID
+	});
 	M.Identity = function(x) {
 		return {
 			bind: function(b) {
@@ -424,6 +554,9 @@
 			},
 			toString: function() {
 				return x + "";
+			},
+			multiply: function(b) {
+				return this.bind(b);
 			}
 		};
 	};
@@ -448,6 +581,9 @@
 			},
 			execState: function(s) {
 				return this.runState(s)(1);
+			},
+			multiply: function(b) {
+				return this.bind(b);
 			}
 		};
 	}
@@ -482,6 +618,9 @@
 				},
 				runStateT: function(s) {
 					return func(s);
+				},
+				multiply: function(b) {
+					return this.bind(b);
 				}
 			};
 		}
@@ -526,6 +665,9 @@
 			isNothing: function() {
 				return false;
 			},
+			multiply: function(b) {
+				return this.bind(b);
+			},
 			toString: function() {
 				return "Just " + x;
 			}
@@ -541,6 +683,9 @@
 		},
 		isNothing: function() {
 			return true;
+		},
+		multiply: function(b) {
+			return this.bind(b);
 		},
 		toString: function() {
 			return "Nothing";
@@ -562,6 +707,9 @@
 			or: function(_) {
 				return this;
 			},
+			multiply: function(b) {
+				return this.bind(b);
+			},
 			toString: function() {
 				return "Right " + x;
 			}
@@ -577,6 +725,9 @@
 			},
 			or: function(b) {
 				return b;
+			},
+			multiply: function(b) {
+				return this.bind(b);
 			},
 			toString: function() {
 				return "Left " + x;

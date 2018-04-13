@@ -23,6 +23,12 @@ describe("MonadPrimus", function () {
 			expect(M.Just(3).bind(fnothing).isNothing()).toBe(true);
 			expect(M.Nothing.bind(fnothing).isNothing()).toBe(true);
 		});
+		it("multiply", function () {
+			expect(M.Just(3).multiply(fn).value()).toBe(9);
+			expect(M.Nothing.multiply(fn).isNothing()).toBe(true);
+			expect(M.Just(3).multiply(fnothing).isNothing()).toBe(true);
+			expect(M.Nothing.multiply(fnothing).isNothing()).toBe(true);
+		});
 		it("value", function () {
 			expect(M.Just(3).value()).toBe(3);
 			expect(function() { M.Nothing.value() }).toThrow();
@@ -68,6 +74,12 @@ describe("MonadPrimus", function () {
 			expect(M.Right(3).bind(fleft).either(fl, fr)).toBe("L6");
 			expect(M.Left(3).bind(fleft).either(fl, fr)).toBe("L3");
 		});
+		it("multiply", function () {
+			expect(M.Right(3).multiply(fn).either(fl, fr)).toBe("R9");
+			expect(M.Left(3).multiply(fn).either(fl, fr)).toBe("L3");
+			expect(M.Right(3).multiply(fleft).either(fl, fr)).toBe("L6");
+			expect(M.Left(3).multiply(fleft).either(fl, fr)).toBe("L3");
+		});
 		it("either", function () {
 			expect(M.Right(3).either(fl, fr)).toBe("R3");
 			expect(M.Left(3).either(fl, fr)).toBe("L3");
@@ -103,22 +115,28 @@ describe("MonadPrimus", function () {
 		function fl(x) { return $L(x * 2); }
 		function fnil(x) { return M.Nil; }
 		it("at", function () {
-			expect($L(1, 2)(0)).toBe(1);
-			expect($L(1, 2)(1)).toBe(2);
-			expect($L(1, 2)(2)).toBe(undefined);
-			expect(M.Nil(0)).toBe(undefined);
-			expect(M.L.N(1)(0)).toBe(1);
-			expect(M.L.N(1)(100)).toBe(101);
-			expect(function() { $L(1, 2)(-1) }).toThrow();
-			expect(function() { $L(1, 2)(9007199254740992) }).toThrow();
-			expect(function() { M.Nil(-1) }).toThrow();
-			expect(function() { M.Nil(9007199254740992) }).toThrow();
+			expect($L(1, 2).at(0)).toBe(1);
+			expect($L(1, 2).at(1)).toBe(2);
+			expect($L(1, 2).at(2)).toBe(undefined);
+			expect(M.Nil.at(0)).toBe(undefined);
+			expect(M.L.N(1).at(0)).toBe(1);
+			expect(M.L.N(1).at(100)).toBe(101);
+			expect(function() { $L(1, 2).at(-1) }).toThrow();
+			expect(function() { $L(1, 2).at(9007199254740992) }).toThrow();
+			expect(function() { M.Nil.at(-1) }).toThrow();
+			expect(function() { M.Nil.at(9007199254740992) }).toThrow();
 		});
 		it("bind", function () {
 			expect($L(1, 2).bind(fn).take()).toEqual([2, 3, 4, 6]);
 			expect($L(1, 2).bind(fl).take()).toEqual([2, 4]);
 			expect(M.Nil.bind(fn).take()).toEqual([]);
 			expect($L(1, 2).bind(fnil).take()).toEqual([]);
+		});
+		it("multiply", function () {
+			expect($L(1, 2).multiply(fn).take()).toEqual([2, 3, 4, 6]);
+			expect($L(1, 2).multiply(fl).take()).toEqual([2, 4]);
+			expect(M.Nil.multiply(fn).take()).toEqual([]);
+			expect($L(1, 2).multiply(fnil).take()).toEqual([]);
 		});
 		it("take", function () {
 			expect($L(1, 2, 3, 4).take()).toEqual([1, 2, 3, 4]);
@@ -370,6 +388,9 @@ describe("MonadPrimus", function () {
 		it("bind", function () {
 			expect(M.Identity(1).bind(fn).value()).toEqual(2);
 		});
+		it("multiply", function () {
+			expect(M.Identity(1).multiply(fn).value()).toEqual(2);
+		});
 		it("value", function () {
 			expect(M.Identity(1).value()).toEqual(1);
 		});
@@ -401,6 +422,9 @@ describe("MonadPrimus", function () {
 		function fm(x) { return M.State(function(s) { return $T(s + 3, s * 3) }); }
 		it("bind", function () {
 			expect(M.State.unit(3).bind(fn).runState(4).toArray()).toEqual([6, 8]);
+		});
+		it("multiply", function () {
+			expect(M.State.unit(3).multiply(fn).runState(4).toArray()).toEqual([6, 8]);
 		});
 		it("runState", function () {
 			expect(M.State.unit(3).runState(4).toArray()).toEqual([3, 4]);
@@ -436,6 +460,9 @@ describe("MonadPrimus", function () {
 		it("bind", function () {
 			expect(St.unit(3).bind(fn).runStateT(4).value().toArray()).toEqual([6, 8]);
 		});
+		it("multiply", function () {
+			expect(St.unit(3).multiply(fn).runStateT(4).value().toArray()).toEqual([6, 8]);
+		});
 		it("runState", function () {
 			expect(St.unit(3).runStateT(4).value().toArray()).toEqual([3, 4]);
 		});
@@ -466,6 +493,8 @@ describe("MonadPrimus", function () {
 		function f3(x) { return x + 3; }
 		function f4(x) { return x + 4; }
 		function f5(x, y, z) { return x + y + z; }
+		function f6(x) { return x + "3"; }
+		function f7(x) { return x + "2"; }
 		it("function", function () {
 			expect($F(f1)(7)(6)(5)).toBe(37);
 			expect($F(f1)(7, 6)(5)).toBe(37);
@@ -481,32 +510,52 @@ describe("MonadPrimus", function () {
 			expect($F(f5)()("7")("6")("5")).toBe("765");
 			expect($F(f5)()()("7")("6")("5")).toBe("765");
 		});
-		it("compose", function () {
-			expect($F(f1).compose(f3)(7)(6)(5)).toBe(40);
-			expect($F(f1).compose(f3)(7, 6)(5)).toBe(40);
-			expect($F(f1).compose(f3)(7, 6, 5)).toBe(40);
-			expect($F(f1).compose(f3)(7)(6, 5)).toBe(40);
-			expect($F(f1).compose(f3)()(7)(6)(5)).toBe(40);
-			expect($F(f1).compose(f3)()()(7)(6)(5)).toBe(40);
-			expect($F(f1).compose(f3).compose(f4)(7)(6)(5)).toBe(44);
-			expect($F(f1).compose(f3).compose(f4)(7, 6)(5)).toBe(44);
-			expect($F(f1).compose(f3).compose(f4)(7, 6, 5)).toBe(44);
-			expect($F(f1).compose(f3).compose(f4)(7)(6, 5)).toBe(44);
-			expect($F(f1).compose(f3).compose(f4)()(7)(6)(5)).toBe(44);
-			expect($F(f1).compose(f3).compose(f4)()()(7)(6)(5)).toBe(44);
-			expect($F(f2).compose(f3)()).toBe(768);
-			expect($F(f2).compose(f3).compose(f4)()).toBe(772);
-			expect($F(f3).compose(f3).compose(f3)(4)).toBe(13);
-			expect(function() { $F(f1).compose(f2) }).toThrow();
-			expect(function() { $F(f1).compose(f1) }).toThrow();
-			expect(function() { $F(f2).compose(f2) }).toThrow();
-			expect(function() { $F(f2).compose(f1) }).toThrow();
-			expect($F(f5).compose(f3)("7")("6")("5")).toBe("7653");
-			expect($F(f5).compose(f3)("7", "6")("5")).toBe("7653");
-			expect($F(f5).compose(f3)("7", "6", "5")).toBe("7653");
-			expect($F(f5).compose(f3)("7")("6", "5")).toBe("7653");
-			expect($F(f5).compose(f3)()("7")("6")("5")).toBe("7653");
-			expect($F(f5).compose(f3)()()("7")("6")("5")).toBe("7653");
+		it("placeholder", function () {
+			expect($F(f5)(M.$1, "6", "5")("7")).toBe("765");
+			expect($F(f5)(M.$1, "6", M.$2)("7")("5")).toBe("765");
+			expect($F(f5)(M.$1, "6", M.$2)("7", "5")).toBe("765");
+			expect($F(f5)(M.$2, "6", M.$1)("5")("7")).toBe("765");
+			expect($F(f5)(M.$2, "6", M.$1)("5", "7")).toBe("765");
+			expect($F(f5)(M.$2, M.$3, M.$1)("5")("7")("6")).toBe("765");
+			expect($F(f5)(M.$2, M.$3, M.$1)("5", "7")("6")).toBe("765");
+			expect($F(f5)(M.$2, M.$3, M.$1)("5")("7", "6")).toBe("765");
+			expect($F(f5)(M.$2, M.$3, M.$1)("5", "7", "6")).toBe("765");
+			expect($F(f5)(M.$3, M.$2, M.$1)("5")("6")("7")).toBe("765");
+		});
+		it("pipe", function () {
+			expect($F(f1).pipe(f3)(7)(6)(5)).toBe(40);
+			expect($F(f1).pipe(f3)(7, 6)(5)).toBe(40);
+			expect($F(f1).pipe(f3)(7, 6, 5)).toBe(40);
+			expect($F(f1).pipe(f3)(7)(6, 5)).toBe(40);
+			expect($F(f1).pipe(f3)()(7)(6)(5)).toBe(40);
+			expect($F(f1).pipe(f3)()()(7)(6)(5)).toBe(40);
+			expect($F(f1).pipe(f3).pipe(f4)(7)(6)(5)).toBe(44);
+			expect($F(f1).pipe(f3).pipe(f4)(7, 6)(5)).toBe(44);
+			expect($F(f1).pipe(f3).pipe(f4)(7, 6, 5)).toBe(44);
+			expect($F(f1).pipe(f3).pipe(f4)(7)(6, 5)).toBe(44);
+			expect($F(f1).pipe(f3).pipe(f4)()(7)(6)(5)).toBe(44);
+			expect($F(f1).pipe(f3).pipe(f4)()()(7)(6)(5)).toBe(44);
+			expect($F(f2).pipe(f3)()).toBe(768);
+			expect($F(f2).pipe(f3).pipe(f4)()).toBe(772);
+			expect($F(f3).pipe(f3).pipe(f3)(4)).toBe(13);
+			expect(function() { $F(f1).pipe(f2) }).toThrow();
+			expect(function() { $F(f1).pipe(f1) }).toThrow();
+			expect(function() { $F(f2).pipe(f2) }).toThrow();
+			expect(function() { $F(f2).pipe(f1) }).toThrow();
+			expect($F(f5).pipe(f3)("7")("6")("5")).toBe("7653");
+			expect($F(f5).pipe(f3)("7", "6")("5")).toBe("7653");
+			expect($F(f5).pipe(f3)("7", "6", "5")).toBe("7653");
+			expect($F(f5).pipe(f3)("7")("6", "5")).toBe("7653");
+			expect($F(f5).pipe(f3)()("7")("6")("5")).toBe("7653");
+			expect($F(f5).pipe(f3)()()("7")("6")("5")).toBe("7653");
+			expect($F(f1).pipe(f6).pipe(f7)(3)(4)(6)).toBe("2732");
+			expect($F(f1).multiply(f6).multiply(f7)(3)(4)(6)).toBe("2732");
+		});
+		it("monoid rule", function () {
+			expect(M.F.unit.multiply(M.F(f7))(3)).toBe("32");
+			expect(M.F(f7).multiply(M.F.unit)(3)).toBe("32");
+			expect(M.F(f1).multiply(M.F(f6).multiply(f7))(3)(4)(6)).toBe("2732");
+			expect((M.F(f1).multiply(f6)).multiply(f7)(3)(4)(6)).toBe("2732");
 		});
 	});
 });

@@ -13,7 +13,7 @@ npm install monadprimus
 
 Use module:
 ```js
-var R = require('monadprimus');
+var M = require('monadprimus');
 ```
 
 ### Browser
@@ -48,8 +48,10 @@ console.log(M.T(1, 2, 3).toString());
 ```js
 // curring: outputs 9
 console.log(M.F((x, y, z) => x + y + z)(3)(2)(4));
-// composition: outputs 10
-console.log(M.F((x, y) => x * y).compose(x => x / 3).compose(x => x * 2)(3)(5));
+// pipe: outputs 10
+console.log(M.F((x, y) => x * y).pipe(x => x / 3).pipe(x => x * 2)(3)(5));
+// placeholder: outputs "765"
+console.log(M.F((x, y, z) => x + y + z)(M.$3, M.$2, M.$1)("5")("6")("7"));
 ```
 
 ### Maybe monad
