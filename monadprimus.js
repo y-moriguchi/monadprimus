@@ -385,6 +385,9 @@
 		}
 		return new List(fn.apply(null, vals), Memo(function() { return M.L.map.apply(null, rests); }));
 	};
+	M.L.create = function(value, rest) {
+		return List(value, Memo(rest));
+	};
 	M.T = function() {
 		var args = Array.prototype.slice.call(arguments);
 		function getTuple(n) {
@@ -495,7 +498,7 @@
 				}
 			},
 			argumentsLength: function() {
-				return arity;
+				return len;
 			},
 			multiply: function(b) {
 				return this.pipe(b);
