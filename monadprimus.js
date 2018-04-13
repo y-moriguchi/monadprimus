@@ -414,13 +414,12 @@
 	};
 	function placeholder(n) {
 		return {
-			_x : n,
 			index: function() {
 				return n - 1;
 			},
 			"@placeholderId@": PLACEHOLDER_ID
 		};
-	};
+	}
 	M.F = function(fn, arity) {
 		var func,
 			len = arity === undef ? fn.length : arity;
@@ -510,12 +509,6 @@
 		});
 		return func;
 	};
-	function _id(x) {
-		return x;
-	}
-	M.F.unit = M.F.I = function(x) {
-		return x;
-	};
 	M.$n = function(n) {
 		if(placeholderFlyweight[n] === undef) {
 			placeholderFlyweight[n] = placeholder(n);
@@ -531,6 +524,9 @@
 	M.$7 = M.$n(7);
 	M.$8 = M.$n(8);
 	M.$9 = M.$n(9);
+	M.F.unit = M.F.I = function(x) {
+		return x;
+	};
 	addMethod(M.F.unit, {
 		pipe: function(b) {
 			var f = b["@functionId@"] === FUNCTION_ID ? b : M.F(b);
