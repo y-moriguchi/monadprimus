@@ -385,6 +385,13 @@
 		}
 		return new List(fn.apply(null, vals), Memo(function() { return M.L.map.apply(null, rests); }));
 	};
+	M.L.zip = function(/*args*/) {
+		var args = Array.prototype.slice.call(arguments);
+		args.unshift(function(/*args*/) {
+			return M.T.apply(null, arguments);
+		});
+		return M.L.map.apply(null, args);
+	};
 	M.L.create = function(value, rest) {
 		return List(value, Memo(rest));
 	};
@@ -740,6 +747,14 @@
 		unit: function(x) {
 			return M.Right(x);
 		}
+	};
+	M.tu = M.faites = M["do"] = function(monad, /*args*/) {
+		var res = monad,
+			i;
+		for(i = 1; i < arguments.length; i++) {
+			res = res.bind(arguments[i]);
+		}
+		return res;
 	};
 	if(typeof module !== "undefined" && module.exports) {
 		module.exports = M;

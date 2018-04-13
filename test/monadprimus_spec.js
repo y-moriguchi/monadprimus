@@ -369,6 +369,16 @@ describe("MonadPrimus", function () {
 			}
 			expect(succ(1).take(5)).toEqual([1, 2, 3, 4, 5]);
 		});
+		it("zip", function () {
+			function toarray(x) {
+				return x.toArray();
+			}
+			expect(M.L.zip($L(1, 2, 3), $L(3, 4, 5), $L(6, 7)).take().map(toarray)).toEqual([[1, 3, 6], [2, 4, 7]]);
+			expect(M.L.zip($L(1, 2, 3), M.Nil, $L(6, 7)).take().map(toarray)).toEqual([]);
+			expect(M.L.zip($L(1, 2, 3)).take().map(toarray)).toEqual([[1], [2], [3]]);
+			expect(M.L.zip(M.L.N(1), M.L.N(2)).take(5).map(toarray)).toEqual([[1, 2], [2, 3], [3, 4], [4, 5], [5, 6]]);
+			expect(M.L.zip(M.L.N(1), $L(3, 4, 5)).take().map(toarray)).toEqual([[1, 3], [2, 4], [3, 5]]);
+		});
 		it("monad rule", function () {
 			expect(M.L.unit(3).bind(fn).take()).toEqual(fn(3).take());
 			expect($L(1, 2, 3).bind(M.L.unit).take()).toEqual($L(1, 2, 3).take());
@@ -572,6 +582,17 @@ describe("MonadPrimus", function () {
 			expect(M.F(f7).multiply(M.F.unit)(3)).toBe("32");
 			expect(M.F(f1).multiply(M.F(f6).multiply(f7))(3)(4)(6)).toBe("2732");
 			expect((M.F(f1).multiply(f6)).multiply(f7)(3)(4)(6)).toBe("2732");
+		});
+	});
+
+	describe("testing do notation", function () {
+		function fn(x) { return $L(x * 2, x * 3); }
+		function fm(x) { return $L(x + 2, x + 3); }
+		function fl(x) { return $L(x * 2); }
+		it("do", function () {
+			expect(M.tu($L(1, 2), fn, fm, fl).take()).toEqual([8, 10, 10, 12, 12, 14, 16, 18]);
+			expect(M.faites($L(1, 2), fn, fm, fl).take()).toEqual([8, 10, 10, 12, 12, 14, 16, 18]);
+			expect(M["do"]($L(1, 2), fn, fm, fl).take()).toEqual([8, 10, 10, 12, 12, 14, 16, 18]);
 		});
 	});
 });
