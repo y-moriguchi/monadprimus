@@ -524,6 +524,9 @@
 	M.$7 = M.$n(7);
 	M.$8 = M.$n(8);
 	M.$9 = M.$n(9);
+	function _id(x) {
+		return x;
+	}
 	M.F.unit = M.F.I = function(x) {
 		return x;
 	};
