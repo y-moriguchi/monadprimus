@@ -1,11 +1,11 @@
-/**
+/*
  * MonadPrimus
  *
  * Copyright (c) 2018 Yuichiro MORIGUCHI
  *
  * This software is released under the MIT License.
  * http://opensource.org/licenses/mit-license.php
- **/
+ */
 (function(root) {
 	var M = {},
 		TUPLE_ID = {},
@@ -147,14 +147,20 @@
 			}
 			return lst.value();
 		}
-		function at(index) {
-			if(index < 0 || index > maxIndex) {
-				throw new Error("index out of bounds");
-			}
-			return index > 0 ? at0(index - 1, succ()) : value;
-		}
 		return {
-			at: at,
+			/**
+			 * @class M.L
+			 * gets an element at the specified index.
+			 * ```
+			 * M.L.N(1).at(10);  // outputs 10
+			 * ```
+			 */
+			at: function(index) {
+				if(index < 0 || index > maxIndex) {
+					throw new Error("index out of bounds");
+				}
+				return index > 0 ? at0(index - 1, succ()) : value;
+			},
 			value: function() {
 				return value;
 			},
@@ -276,7 +282,16 @@
 			return this.bind(b);
 		}
 	};
+	/**
+	 * An empty list.
+	 */
 	M.Nil = nil;
+	/**
+	 * creates a list from the given arguments.
+	 * ```
+	 * M.L(3, 4, 6).at(1);   // outputs 4
+	 * ```
+	 */
 	M.L = function() {
 		var args = Array.prototype.slice.call(arguments),
 			res = nil,
