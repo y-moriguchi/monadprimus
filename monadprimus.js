@@ -315,7 +315,7 @@
 			},
 			/**
 			 * @class M.L
-			 * This method is equivalent with 'bind'.
+			 * This method is equivalent to 'bind'.
 			 */
 			multiply: function(b) {
 				return this.bind(b);
@@ -716,7 +716,7 @@
 			},
 			/**
 			 * @class M.F
-			 * This method is equivalent with 'bind'.
+			 * This method is equivalent to 'bind'.
 			 */
 			multiply: function(b) {
 				return this.pipe(b);
@@ -807,27 +807,57 @@
 		},
 		"@functionId@": FUNCTION_ID
 	});
+	/**
+	 * creates an identity monad with the given value.
+	 */
 	M.Identity = function(x) {
 		return {
+			/**
+			 * @class M.Identity
+			 * Monad 'bind' function.  
+			 * This method simply apply the element to the given function.
+			 * ```
+			 * M.Identity(4).bind(x => M.Identity(x + 2));  // outputs M.Identity(6)
+			 * ```
+			 */
 			bind: function(b) {
 				return b(x);
 			},
+			/**
+			 * @class M.Identity
+			 * returns the element.
+			 */
 			value: function() {
 				return x;
 			},
 			toString: function() {
 				return x + "";
 			},
+			/**
+			 * @class M.Identity
+			 * This method is equivalent to 'bind'.
+			 */
 			multiply: function(b) {
 				return this.bind(b);
 			}
 		};
 	};
+	/**
+	 * Monad 'unit' function.  
+	 * This method is equivalent to M.Identity.
+	 */
 	M.Identity.unit = function(x) {
 		return M.Identity(x);
 	};
+	/**
+	 * creates new state monad.
+	 */
 	M.State = function(func) {
 		return {
+			/**
+			 * @class M.State
+			 * Monad 'bind' function.
+			 */
 			bind: function(b) {
 				var me = this;
 				return M.State(function(s0) {
@@ -836,41 +866,79 @@
 					return s2;
 				});
 			},
+			/**
+			 * @class M.State
+			 * returns a tuple of the result and state by executing this monad.
+			 */
 			runState: function(s) {
 				return func(s);
 			},
+			/**
+			 * @class M.State
+			 * returns the result value by executing this monad.
+			 */
 			evalState: function(s) {
 				return this.runState(s)(0);
 			},
+			/**
+			 * @class M.State
+			 * returns the state by executing this monad.
+			 */
 			execState: function(s) {
 				return this.runState(s)(1);
 			},
+			/**
+			 * @class M.State
+			 * This method is equivalent to 'bind'.
+			 */
 			multiply: function(b) {
 				return this.bind(b);
 			}
 		};
 	}
+	/**
+	 * Monad 'unit' function.  
+	 * This method creates a state monad whose value is the given value.
+	 */
 	M.State.unit = function(x) {
 		return M.State(function(s) {
 			return M.T(x, s);
 		});
 	};
+	/**
+	 * A monad which copies the state to the value.
+	 */
 	M.State.getState = M.State(function(s) {
 		return M.T(s, s);
 	});
+	/**
+	 * creates new monad which replaces the state to the given value.
+	 */
 	M.State.putState = function(x) {
 		return M.State(function(_) {
 			return M.T(undef, x);
 		});
 	};
+	/**
+	 * creates new monad which replaces the state to the result of calling the given function.
+	 */
 	M.State.modify = function(f) {
 		return M.State(function(x) {
 			return M.T(undef, f(x));
 		});
 	};
+	/*
+	 * creates new state monad transformer.  
+	 * This method has two curried arguments.  
+	 * First argument is constructor of monad m, and second argument is a function a → m (v, s).
+	 */
 	M.StateT = function(Type) {
 		function St(func) {
 			return {
+				/*
+				 * @class M.StateT
+				 * Monad 'bind' function.
+				 */
 				bind: function(b) {
 					var me = this;
 					return St(function(s0) {
@@ -879,32 +947,56 @@
 						});
 					});
 				},
+				/*
+				 * @class M.StateT
+				 * returns a tuple of the result and state by executing this monad.
+				 */
 				runStateT: function(s) {
 					return func(s);
 				},
+				/*
+				 * @class M.StateT
+				 * This method is equivalent to 'bind'.
+				 */
 				multiply: function(b) {
 					return this.bind(b);
 				}
 			};
 		}
+		/*
+		 * Monad 'unit' function.  
+		 * This method creates a state monad whose value is the given value.
+		 */
 		St.unit = function(x) {
 			return St(function(s) {
 				return Type.unit(M.T(x, s));
 			});
 		};
+		/*
+		 * A monad which copies the state to the value.
+		 */
 		St.getState = St(function(s) {
 			return Type.unit(M.T(s, s));
 		});
+		/*
+		 * creates new monad which replaces the state to the given value.
+		 */
 		St.putState = function(x) {
 			return St(function(_) {
 				return Type.unit(M.T(undef, x));
 			});
 		};
+		/*
+		 * creates new monad which replaces the state to the result of calling the given function.
+		 */
 		St.modify = function(f) {
 			return St(function(x) {
 				return Type.unit(M.T(undef, f(x)));
 			});
 		};
+		/*
+		 * lifts the given monad to state monad transformer.
+		 */
 		St.lift = function(m) {
 			return St(function(s) {
 				return m.bind(function(a) {
@@ -914,20 +1006,53 @@
 		};
 		return St;
 	};
+	/**
+	 * creates new maybe monad with the given value.
+	 */
 	M.Just = function(x) {
 		return {
+			/**
+			 * @class M.Just
+			 * Monad 'bind' function.  
+			 * This method returns the result calling given function a → M.Maybe a.
+			 * ```
+			 * M.Just(3).bind(x => M.Just(x * x));  // outputs M.Just(9)
+			 * ```
+			 */
 			bind: function(b) {
 				return b(x);
 			},
+			/**
+			 * @class M.Just
+			 * returns a wrapped value.
+			 * ```
+			 * M.Just(3).value();  // outputs 3
+			 * ```
+			 */
 			value: function() {
 				return x;
 			},
+			/**
+			 * @class M.Just
+			 * returns this monad.
+			 * ```
+			 * M.Just(3).or(M.Just(4));  // output M.Just(3)
+			 * ```
+			 */
 			or: function(_) {
 				return this;
 			},
+			/**
+			 * @class M.Just
+			 * always returns false.
+			 */
 			isNothing: function() {
 				return false;
 			},
+			/**
+			 * @class M.Just
+			 * This method is equivalent to 'bind'.
+			 */
 			multiply: function(b) {
 				return this.bind(b);
 			},
@@ -936,17 +1061,47 @@
 			}
 		};
 	};
+	/**
+	 * A nothing monad.
+	 */
 	M.Nothing = {
+		/**
+		 * @class M.Nothing
+		 * Monad 'bind' function.  
+		 * returns this monad.
+		 * ```
+		 * M.Nothing.bind(x => M.Just(x * x));  // outputs M.Nothing
+		 * ```
+		 */
 		bind: function(_) { return this; },
+		/**
+		 * @class M.Nothing
+		 * always throws an error.
+		 */
 		value: function(_) {
 			throw new Error("can not get value from Nothing");
 		},
+		/**
+		 * @class M.Nothing
+		 * returns the given argument.
+		 * ```
+		 * M.Nothing.or(M.Just(4));  // outputs M.Just(4)
+		 * ```
+		 */
 		or: function(b) {
 			return b;
 		},
+		/**
+		 * @class M.Nothing
+		 * always returns true.
+		 */
 		isNothing: function() {
 			return true;
 		},
+		/**
+		 * @class M.Nothing
+		 * This method is equivalent to 'bind'.
+		 */
 		multiply: function(b) {
 			return this.bind(b);
 		},
@@ -954,10 +1109,12 @@
 			return "Nothing";
 		}
 	};
-	M.Maybe = {
-		unit: function(x) {
-			return M.Just(x);
-		}
+	/**
+	 * Monad 'unit' function.  
+	 * This method is equivalent to M.Just(x).
+	 */
+	M.Maybe.unit = function(x) {
+		return M.Just(x);
 	};
 	M.Right = function(x) {
 		return {
