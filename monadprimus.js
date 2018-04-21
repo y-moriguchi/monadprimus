@@ -265,9 +265,9 @@
 			},
 			/**
 			 * @class M.L
-			 * returns new list whose elements is the result of calling the function given by the argument
+			 * returns new list with the result of calling the function given by the argument
 			 * on every element of this list.  
-			 * This method is available when the list has infinity elements.
+			 * This method is available when the list has infinite elements.
 			 * ```
 			 * M.L.N(1).map(x => x * 2);  // outputs M.L(2, 4, 6, ...)
 			 * ```
@@ -385,9 +385,23 @@
 		return res;
 	};
 	M.L.Nil = nil;
+	/**
+	 * Monad 'unit' (or 'return') function.  
+	 * The method returns new list which contains only the given element.
+	 * ```
+	 * M.L.unit(9);  // outputs M.L(9)
+	 * ```
+	 */
 	M.L.unit = function(x) {
 		return List(x, function() { return nil; });
 	};
+	/**
+	 * returns an infinite list of natural number.  
+	 * The first argument is first number.
+	 * ```
+	 * M.L.N(0);  // outputs M.L(0, 1, 2, ...)
+	 * ```
+	 */
 	M.L.N = function(one) {
 		function succ(n) {
 			return List(n, Memo(function() { return succ(n + 1); }));
@@ -397,6 +411,9 @@
 	function successorZ(n) {
 		return List(n, Memo(function() { return successorZ(n > 0 ? -n : -n + 1); }));
 	}
+	/**
+	 * A infinite list of integer.
+	 */
 	M.L.Z = successorZ(0);
 	M.L.range = function(start, end) {
 		function succ(n) {
@@ -419,6 +436,15 @@
 			return nxt ? permutationSuccessor(arr, num, nxt) : nil;
 		}));
 	}
+	/**
+	 * returns a list which consist of k-permutation of the array given by first argument.  
+	 * Every element of the list is a tuple.  
+	 * The number k is given by second argument.
+	 * If k is not given, k is the length of the given array.
+	 * ```
+	 * M.L.permutation(["a", "b", "c"], 2);  // outputs M.L(M.T("a", "b"), M.T("a", "c"), ...)
+	 * ```
+	 */
 	M.L.permutation = function(arr, num) {
 		var n = num === undef ? arr.length : num;
 		if(arr.length < n) {
@@ -426,6 +452,15 @@
 		}
 		return permutationSuccessor(arr, n, permutationIndex(arr.length - 1, n));
 	};
+	/**
+	 * returns a list which consists of k-combination of the array given by first argument.  
+	 * Every element of the list is a tuple.  
+	 * The number k is given by second argument.
+	 * If k is not given, k is the length of the given array.
+	 * ```
+	 * M.L.combination(["a", "b", "c"], 2);  // outputs M.L(M.T("a", "b"), M.T("a", "c"), ...)
+	 * ```
+	 */
 	M.L.combination = function(arr, num) {
 		var n = num === undef ? arr.length : num;
 		if(arr.length < n) {
@@ -433,6 +468,14 @@
 		}
 		return permutationSuccessor(arr, n, combinationIndex(arr.length - 1, n));
 	};
+	/**
+	 * returns new list of cross product of the given lists.  
+	 * A infinite list can give as an operand.
+	 * ```
+	 * // outputs M.L(M.T(2, 3), M.T(4, 3), M.T(2, 6), M.T(6, 3), M.T(4, 6), M.T(6, 6))
+	 * M.L.product(M.L(2, 4, 6), M.L(3, 6));
+	 * ```
+	 */
 	M.L.product = function() {
 		var args = Array.prototype.slice.call(arguments);
 		function next(index) {
@@ -456,6 +499,15 @@
 		}
 		return next(directProductIndex(args.length, 0));
 	};
+	/**
+	 * returns nth power list of the list given by first argument.  
+	 * The number n is given by second argument.  
+	 * A infinite list can give as an operand.
+	 * ```
+	 * // outputs M.L(M.T("a", "a"), M.T("a", "b"), M.T("b", "a"), M.T("b", "b"))
+	 * M.L.power(M.L("a", "b"), 2);
+	 * ```
+	 */
 	M.L.power = function(list, n) {
 		var args = new Array(n),
 			i;
@@ -464,6 +516,14 @@
 		}
 		return M.L.product.apply(null, args);
 	};
+	/**
+	 * returns new list with the result of
+	 * calling the function given by the argument on every element of the lists.  
+	 * This method is available when the list has infinite elements.
+	 * ```
+	 * M.L.map((x, y, z) => x + y + z, M.L(1, 2, 3), M.L(3, 4, 5), M.L(6, 7));  // outputs M.L(10, 13)
+	 * ```
+	 */
 	M.L.map = function(fn /* ,args */) {
 		var args = Array.prototype.slice.call(arguments, 1),
 			vals = [],
@@ -481,6 +541,12 @@
 		}
 		return new List(fn.apply(null, vals), Memo(function() { return M.L.map.apply(null, rests); }));
 	};
+	/**
+	 * returns new list with the tuples of the given lists.
+	 * ```
+	 * M.L.zip(M.L(1, 2, 3), M.L(3, 4, 5), M.L(6, 7));  // outputs M.L(M.T(1, 3, 6), M.T(2, 4, 7))
+	 * ```
+	 */
 	M.L.zip = function(/*args*/) {
 		var args = Array.prototype.slice.call(arguments);
 		args.unshift(function(/*args*/) {
@@ -488,9 +554,25 @@
 		});
 		return M.L.map.apply(null, args);
 	};
+	/**
+	 * creates new list whose first value is the first arguement and rest value is
+	 * the result of a thunk (a function with no arguments) given by second argument.
+	 * ```
+	 * function succ(n) {
+	 * 	return M.L.create(n, function() { return succ(n + 1); });
+	 * }
+	 * succ(1);  // outputs M.L(1, 2, 3, 4, 5, ...)
+	 * ```
+	 */
 	M.L.create = function(value, rest) {
 		return List(value, Memo(rest));
 	};
+	/**
+	 * creates new tuple of the given elements.
+	 * ```
+	 * M.T(1, 2, 3);  // outputs a tuple (1, 2, 3)
+	 * ```
+	 */
 	M.T = function() {
 		var args = Array.prototype.slice.call(arguments);
 		function getTuple(n) {
@@ -505,6 +587,13 @@
 				}
 				return res + ")";
 			},
+			/**
+			 * @class M.T
+			 * converts this tuple to an array.
+			 * ```
+			 * M.T(1, 2, 3).toArray()  // outputs [1, 2, 3]
+			 * ```
+			 */
 			toArray: function() {
 				return [].concat(args);
 			},
@@ -512,6 +601,9 @@
 		});
 		return getTuple;
 	};
+	/**
+	 * returns true is the given object is a tuple.
+	 */
 	M.T.isTuple = function(obj) {
 		return obj["@tupleId@"] === TUPLE_ID;
 	};
@@ -523,6 +615,14 @@
 			"@placeholderId@": PLACEHOLDER_ID
 		};
 	}
+	/**
+	 * creates a function which can curry and compose.  
+	 * First argument is a function to wrap and second argument is arity of the function.  
+	 * If second argument is omitted, arity is equals to length of the first argument.
+	 * ```
+	 * M.F((x, y, z) => x + y + z)(7)(6)(5);  // outputs 18
+	 * ```
+	 */
 	M.F = function(fn, arity) {
 		var func,
 			len = arity === undef ? fn.length : arity;
@@ -586,6 +686,14 @@
 		}
 		func = partial([]);
 		addMethod(func, {
+			/**
+			 * @class M.F
+			 * concatenates this function and the given function.  
+			 * Arity of the given function must be 1.  
+			 * The concatenated function can be curried.
+			 * ```
+			 * M.F((x, y, z) => x + y + z).pipe(x => x + 2)(7)(6)(5);  // outputs 20
+			 */
 			pipe: function(b) {
 				var f;
 				if(typeof b !== "function") {
@@ -599,12 +707,24 @@
 					return M.F(partial([], b), fn.length);
 				}
 			},
+			/**
+			 * @class M.F
+			 * returns arity of this function.
+			 */
 			argumentsLength: function() {
 				return len;
 			},
+			/**
+			 * @class M.F
+			 * This method is equivalent with 'bind'.
+			 */
 			multiply: function(b) {
 				return this.pipe(b);
 			},
+			/**
+			 * @class M.F
+			 * unwraps this function.
+			 */
 			value: function() {
 				return func;
 			},
@@ -612,27 +732,65 @@
 		});
 		return func;
 	};
+	/**
+	 * The placeholder of argument.
+	 * ```
+	 * $F((x, y, z) => x + y + z)(M.$n(1), "6", M.$n(2))("7")("5");  // outputs "765"
+	 * ```
+	 */
 	M.$n = function(n) {
 		if(placeholderFlyweight[n] === undef) {
 			placeholderFlyweight[n] = placeholder(n);
 		}
 		return placeholderFlyweight[n];
 	};
+	/**
+	 * A shortcut of M.$n(1)
+	 */
 	M.$1 = M.$n(1);
+	/**
+	 * A shortcut of M.$n(2)
+	 */
 	M.$2 = M.$n(2);
+	/**
+	 * A shortcut of M.$n(3)
+	 */
 	M.$3 = M.$n(3);
+	/**
+	 * A shortcut of M.$n(4)
+	 */
 	M.$4 = M.$n(4);
+	/**
+	 * A shortcut of M.$n(5)
+	 */
 	M.$5 = M.$n(5);
+	/**
+	 * A shortcut of M.$n(6)
+	 */
 	M.$6 = M.$n(6);
+	/**
+	 * A shortcut of M.$n(7)
+	 */
 	M.$7 = M.$n(7);
+	/**
+	 * A shortcut of M.$n(8)
+	 */
 	M.$8 = M.$n(8);
+	/**
+	 * A shortcut of M.$n(9)
+	 */
 	M.$9 = M.$n(9);
 	function _id(x) {
 		return x;
 	}
-	M.F.unit = M.F.I = function(x) {
+	/**
+	 * An identity function (I combinator).  
+	 * M.F.I is an alias of this method.
+	 */
+	M.F.unit = function(x) {
 		return x;
 	};
+	M.F.I = M.F.unit;
 	addMethod(M.F.unit, {
 		pipe: function(b) {
 			var f = b["@functionId@"] === FUNCTION_ID ? b : M.F(b);
