@@ -161,12 +161,34 @@
 				}
 				return index > 0 ? at0(index - 1, succ()) : value;
 			},
+			/**
+			 * @class M.L
+			 * gets first element.
+			 * ```
+			 * M.L(3, 4, 6).value();  // outputs 3
+			 * ```
+			 */
 			value: function() {
 				return value;
 			},
+			/**
+			 * @class M.L
+			 * gets rest of this list.
+			 * ```
+			 * M.L(3, 4, 6).rest();  // outputs M.L(4, 6)
+			 * ```
+			 */
 			rest: function() {
 				return succ();
 			},
+			/**
+			 * @class M.L
+			 * Monad 'bind' function.  
+			 * The first argument is a function whose input is element of list and output is M.L.
+			 * ```
+			 * M.L(2, 7).bind(x => M.L(x + 2, x + 3));  // outputs M.L(4, 5, 9, 10)
+			 * ```
+			 */
 			bind: function(b) {
 				var me = this,
 					mapped = b(me.value());
@@ -183,6 +205,15 @@
 				}
 				return mapped === nil ? nil : new List(mapped.value(), Memo(function() { return getNext(mapped.rest); }));
 			},
+			/**
+			 * @class M.L
+			 * returns an array of first n elements.  
+			 * If the argument is not given, returns an array of all elements.  
+			 * Notice: This method may not stop if elements of the list is infinity.
+			 * ```
+			 * M.L.N(2).take(5));  // outputs [2, 3, 4, 5, 6]
+			 * ```
+			 */
 			take: function(n) {
 				var res = [],
 					next = this,
@@ -193,6 +224,14 @@
 				}
 				return res;
 			},
+			/**
+			 * @class M.L
+			 * returns new list which pass the test which is given the first argument.  
+			 * This method is available when the list has infinity elements.
+			 * ```
+			 * M.L.N(1).filter(x => x % 2 === 0);  // outputs M.L(2, 4, 6, ...)
+			 * ```
+			 */
 			filter: function(pred) {
 				function filterNext(succ) {
 					var next;
@@ -205,6 +244,13 @@
 				}
 				return filterNext(this);
 			},
+			/**
+			 * @class M.L
+			 * concatenates the given list to this list.
+			 * ```
+			 * M.L(3, 4).concat(M.L(6));  // outputs M.L(3, 4, 6)
+			 * ```
+			 */
 			concat: function(list) {
 				var me = this;
 				function concatList(succ) {
@@ -217,10 +263,28 @@
 				}
 				return list === nil ? me : new List(me.value(), Memo(function() { return concatList(me.rest); }));
 			},
+			/**
+			 * @class M.L
+			 * returns new list whose elements is the result of calling the function given by the argument
+			 * on every element of this list.  
+			 * This method is available when the list has infinity elements.
+			 * ```
+			 * M.L.N(1).map(x => x * 2);  // outputs M.L(2, 4, 6, ...)
+			 * ```
+			 */
 			map: function(fn) {
 				var me = this;
 				return new List(fn(me.value()), Memo(function() { return me.rest().map(fn); }));
 			},
+			/**
+			 * @class M.L
+			 * returns true if it exists that the element of this list applies to the function
+			 * given by the first argument is truthy.  
+			 * Notice: This method may not stop if elements of the list is infinity.
+			 * ```
+			 * M.L(3, 4, 6).some(x => x % 2 === 0);  // outputs true
+			 * ```
+			 */
 			some: function(pred) {
 				var next;
 				for(next = this; next !== nil; next = next.rest()) {
@@ -230,12 +294,29 @@
 				}
 				return false;
 			},
+			/**
+			 * @class M.L
+			 * returns false if it exists that the element of this list applies to the function
+			 * given by the first argument is falsy.  
+			 * Notice: This method may not stop if elements of the list is infinity.
+			 * ```
+			 * M.L(3, 4, 6).every(x => x % 2 === 0);  // outputs false
+			 * ```
+			 */
 			every: function(pred) {
 				return !this.some(function(x) { return !pred(x); });
 			},
+			/**
+			 * @class M.L
+			 * returns true if this list is empty.
+			 */
 			isNull: function(index) {
 				return index === undef || index === 0 ? false : this.rest().isNull(index - 1);
 			},
+			/**
+			 * @class M.L
+			 * This method is equivalent with 'bind'.
+			 */
 			multiply: function(b) {
 				return this.bind(b);
 			}
