@@ -63,3 +63,6 @@ console.log(M.Nothing.bind(x => M.Just(x + 3)).toString());
 // outputs "Nothing"
 console.log(M.Just(3).bind(x => M.Nothing).toString());
 ```
+
+## Documentation
+A document of MonadPrimus is [here](http://monadprimus.morilib.net/index.html).
