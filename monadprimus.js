@@ -151,6 +151,8 @@
 			/**
 			 * @class M.L
 			 * gets an element at the specified index.
+			 * @ja
+			 * 指定されたインデックスの要素を取得します。
 			 * ```
 			 * M.L.N(1).at(10);  // outputs 10
 			 * ```
@@ -164,6 +166,8 @@
 			/**
 			 * @class M.L
 			 * gets first element.
+			 * @ja
+			 * 最初の要素を取得します。
 			 * ```
 			 * M.L(3, 4, 6).value();  // outputs 3
 			 * ```
@@ -174,6 +178,8 @@
 			/**
 			 * @class M.L
 			 * gets rest of this list.
+			 * @ja
+			 * 最初の要素を除いたリストを取得します。
 			 * ```
 			 * M.L(3, 4, 6).rest();  // outputs M.L(4, 6)
 			 * ```
@@ -185,6 +191,9 @@
 			 * @class M.L
 			 * Monad 'bind' function.  
 			 * The first argument is a function whose input is element of list and output is M.L.
+			 * @ja
+			 * モナドのbind関数です。  
+			 * 引数はリストの各要素を受け取り、M.Lを返す関数です。
 			 * ```
 			 * M.L(2, 7).bind(x => M.L(x + 2, x + 3));  // outputs M.L(4, 5, 9, 10)
 			 * ```
@@ -210,6 +219,10 @@
 			 * returns an array of first n elements.  
 			 * If the argument is not given, returns an array of all elements.  
 			 * Notice: This method may not stop if elements of the list is infinity.
+			 * @ja
+			 * 引数で与えられだけの数の要素を配列で取得します。  
+			 * 引数が省略された時はすべての要素を取得します。  
+			 * 注意:引数が省略され、リストの要素が無限個あるとき、このメソッドは停止しない可能性があります。
 			 * ```
 			 * M.L.N(2).take(5));  // outputs [2, 3, 4, 5, 6]
 			 * ```
@@ -228,6 +241,9 @@
 			 * @class M.L
 			 * returns new list which pass the test which is given the first argument.  
 			 * This method is available when the list has infinity elements.
+			 * @ja
+			 * 要素が引数で与えられた関数を通した時がtrueとなる要素のみを選択します。  
+			 * このメソッドはリストの要素数が無限個でも使用できます。
 			 * ```
 			 * M.L.N(1).filter(x => x % 2 === 0);  // outputs M.L(2, 4, 6, ...)
 			 * ```
@@ -247,6 +263,8 @@
 			/**
 			 * @class M.L
 			 * concatenates the given list to this list.
+			 * @ja
+			 * リストを連結します。
 			 * ```
 			 * M.L(3, 4).concat(M.L(6));  // outputs M.L(3, 4, 6)
 			 * ```
@@ -268,6 +286,9 @@
 			 * returns new list with the result of calling the function given by the argument
 			 * on every element of this list.  
 			 * This method is available when the list has infinite elements.
+			 * @ja
+			 * リストの各要素を引数の関数に作用させた結果のリストを取得します。  
+			 * このメソッドはリストの要素数が無限個でも使用できます。
 			 * ```
 			 * M.L.N(1).map(x => x * 2);  // outputs M.L(2, 4, 6, ...)
 			 * ```
@@ -281,6 +302,9 @@
 			 * returns true if it exists that the element of this list applies to the function
 			 * given by the first argument is truthy.  
 			 * Notice: This method may not stop if elements of the list is infinity.
+			 * @ja
+			 * リストの要素に引数で与えられた関数がtrueとなるものがあるときtrueを返します。  
+			 * 注意: このメソッドは要素数が無限個のとき停止しない可能性があります。
 			 * ```
 			 * M.L(3, 4, 6).some(x => x % 2 === 0);  // outputs true
 			 * ```
@@ -299,6 +323,9 @@
 			 * returns false if it exists that the element of this list applies to the function
 			 * given by the first argument is falsy.  
 			 * Notice: This method may not stop if elements of the list is infinity.
+			 * @ja
+			 * リストの要素に引数で与えられた関数がfalseとなるものがあるときfalseを返します。  
+			 * 注意: このメソッドは要素数が無限個のとき停止しない可能性があります。
 			 * ```
 			 * M.L(3, 4, 6).every(x => x % 2 === 0);  // outputs false
 			 * ```
@@ -309,6 +336,8 @@
 			/**
 			 * @class M.L
 			 * returns true if this list is empty.
+			 * @ja
+			 * リストが空のときtrueを返します。
 			 */
 			isNull: function(index) {
 				return index === undef || index === 0 ? false : this.rest().isNull(index - 1);
@@ -316,6 +345,8 @@
 			/**
 			 * @class M.L
 			 * This method is equivalent to 'bind'.
+			 * @ja
+			 * このメソッドはbindと等価です。
 			 */
 			multiply: function(b) {
 				return this.bind(b);
@@ -365,10 +396,14 @@
 	};
 	/**
 	 * An empty list.
+	 * @ja
+	 * 空のリストです。
 	 */
 	M.Nil = nil;
 	/**
 	 * creates a list from the given arguments.
+	 * @ja
+	 * 引数で与えられた要素の有限のリストを生成します。
 	 * ```
 	 * M.L(3, 4, 6).at(1);   // outputs 4
 	 * ```
@@ -388,6 +423,9 @@
 	/**
 	 * Monad 'unit' (or 'return') function.  
 	 * The method returns new list which contains only the given element.
+	 * @ja
+	 * モナドのunit(return)関数です。  
+	 * 引数で与えられた要素のみを持つリストを生成します。
 	 * ```
 	 * M.L.unit(9);  // outputs M.L(9)
 	 * ```
@@ -398,6 +436,8 @@
 	/**
 	 * returns an infinite list of natural number.  
 	 * The first argument is first number.
+	 * @ja
+	 * 引数で始まる自然数を表す無限リストを生成します。
 	 * ```
 	 * M.L.N(0);  // outputs M.L(0, 1, 2, ...)
 	 * ```
@@ -413,8 +453,16 @@
 	}
 	/**
 	 * A infinite list of integer.
+	 * @ja
+	 * 整数を表す無限リストです。
 	 */
 	M.L.Z = successorZ(0);
+	/**
+	 * A list of integers which starts with first argument(inclusive) and ends with second argument(inclusive).
+	 * @ja
+	 * 最初の引数で始まり、2番目の引数で終わる整数の有限リストを生成します。  
+	 * 引数自身を含みます。
+	 */
 	M.L.range = function(start, end) {
 		function succ(n) {
 			return List(n, Memo(function() { return n < end ? succ(n + 1) : nil; }));
@@ -441,6 +489,9 @@
 	 * Every element of the list is a tuple.  
 	 * The number k is given by second argument.
 	 * If k is not given, k is the length of the given array.
+	 * @ja
+	 * 最初の引数で与えられた配列から2番目の引数で与えられた数を取り出した順列を生成します。  
+	 * 2番目の引数が省略されたときは配列すべての順列を生成します。
 	 * ```
 	 * M.L.permutation(["a", "b", "c"], 2);  // outputs M.L(M.T("a", "b"), M.T("a", "c"), ...)
 	 * ```
@@ -456,7 +507,8 @@
 	 * returns a list which consists of k-combination of the array given by first argument.  
 	 * Every element of the list is a tuple.  
 	 * The number k is given by second argument.
-	 * If k is not given, k is the length of the given array.
+	 * @ja
+	 * 最初の引数で与えられた配列から2番目の引数で与えられた数を取り出した組み合わせを生成します。  
 	 * ```
 	 * M.L.combination(["a", "b", "c"], 2);  // outputs M.L(M.T("a", "b"), M.T("a", "c"), ...)
 	 * ```
@@ -471,6 +523,9 @@
 	/**
 	 * returns new list of cross product of the given lists.  
 	 * A infinite list can give as an operand.
+	 * @ja
+	 * 与えられた引数のデカルト積を返します。  
+	 * 引数には無限リストを渡すこともできます。
 	 * ```
 	 * // outputs M.L(M.T(2, 3), M.T(4, 3), M.T(2, 6), M.T(6, 3), M.T(4, 6), M.T(6, 6))
 	 * M.L.product(M.L(2, 4, 6), M.L(3, 6));
@@ -503,6 +558,8 @@
 	 * returns nth power list of the list given by first argument.  
 	 * The number n is given by second argument.  
 	 * A infinite list can give as an operand.
+	 * @ja
+	 * 最初の引数で与えられたリストを2番目の引数でべき乗したリストを生成します。
 	 * ```
 	 * // outputs M.L(M.T("a", "a"), M.T("a", "b"), M.T("b", "a"), M.T("b", "b"))
 	 * M.L.power(M.L("a", "b"), 2);
@@ -520,6 +577,9 @@
 	 * returns new list with the result of
 	 * calling the function given by the argument on every element of the lists.  
 	 * This method is available when the list has infinite elements.
+	 * @ja
+	 * 2番目以降の引数で与えられた引数を最初の引数で与えられた関数に適用した結果のリストを返します。  
+	 * このメソッドはリストが無限でも使用できます。
 	 * ```
 	 * M.L.map((x, y, z) => x + y + z, M.L(1, 2, 3), M.L(3, 4, 5), M.L(6, 7));  // outputs M.L(10, 13)
 	 * ```
@@ -543,6 +603,8 @@
 	};
 	/**
 	 * returns new list with the tuples of the given lists.
+	 * @ja
+	 * 引数で与えられたリストをタプルにまとめたリストを生成します。
 	 * ```
 	 * M.L.zip(M.L(1, 2, 3), M.L(3, 4, 5), M.L(6, 7));  // outputs M.L(M.T(1, 3, 6), M.T(2, 4, 7))
 	 * ```
@@ -557,6 +619,8 @@
 	/**
 	 * creates new list whose first value is the first arguement and rest value is
 	 * the result of a thunk (a function with no arguments) given by second argument.
+	 * @ja
+	 * 最初の値が最初の引数で、その次の値がサンク(引数のない関数)で与えられるリストを生成します。
 	 * ```
 	 * function succ(n) {
 	 * 	return M.L.create(n, function() { return succ(n + 1); });
@@ -569,6 +633,8 @@
 	};
 	/**
 	 * creates new tuple of the given elements.
+	 * @ja
+	 * 引数で与えられたタプルを生成します。
 	 * ```
 	 * M.T(1, 2, 3);  // outputs a tuple (1, 2, 3)
 	 * ```
@@ -590,6 +656,8 @@
 			/**
 			 * @class M.T
 			 * converts this tuple to an array.
+			 * @ja
+			 * タプルを配列に変換します。
 			 * ```
 			 * M.T(1, 2, 3).toArray()  // outputs [1, 2, 3]
 			 * ```
@@ -603,6 +671,8 @@
 	};
 	/**
 	 * returns true is the given object is a tuple.
+	 * @ja
+	 * オブジェクトがタプルであるか判定します。
 	 */
 	M.T.isTuple = function(obj) {
 		return obj["@tupleId@"] === TUPLE_ID;
@@ -619,6 +689,10 @@
 	 * creates a function which can curry and compose.  
 	 * First argument is a function to wrap and second argument is arity of the function.  
 	 * If second argument is omitted, arity is equals to length of the first argument.
+	 * @ja
+	 * カリー化および合成可能な関数ラッパを生成します。  
+	 * 最初の引数にはラップする関数、2番目の引数には引数の長さ(arity)を指定します。  
+	 * 2番目の引数が省略されたときは最初の引数の長さが指定されます。
 	 * ```
 	 * M.F((x, y, z) => x + y + z)(7)(6)(5);  // outputs 18
 	 * ```
@@ -691,6 +765,10 @@
 			 * concatenates this function and the given function.  
 			 * Arity of the given function must be 1.  
 			 * The concatenated function can be curried.
+			 * @ja
+			 * 関数を連結します。  
+			 * 引数で与えられる、連結される関数の引数の長さは1である必要があります。  
+			 * 連結された関数もカリー化出来ます。
 			 * ```
 			 * M.F((x, y, z) => x + y + z).pipe(x => x + 2)(7)(6)(5);  // outputs 20
 			 */
@@ -710,13 +788,17 @@
 			/**
 			 * @class M.F
 			 * returns arity of this function.
+			 * @ja
+			 * この関数ラッパの引数の長さを返します。
 			 */
 			argumentsLength: function() {
 				return len;
 			},
 			/**
 			 * @class M.F
-			 * This method is equivalent to 'bind'.
+			 * This method is equivalent to 'pipe'.
+			 * @ja
+			 * このメソッドは'pipe'と等価です。
 			 */
 			multiply: function(b) {
 				return this.pipe(b);
@@ -724,6 +806,8 @@
 			/**
 			 * @class M.F
 			 * unwraps this function.
+			 * @ja
+			 * ラップされている関数を返します。
 			 */
 			value: function() {
 				return func;
@@ -734,6 +818,9 @@
 	};
 	/**
 	 * The placeholder of argument.
+	 * @ja
+	 * 引数のプレースホルダです。  
+	 * 関数ラッパ(M.F)で使用します。
 	 * ```
 	 * $F((x, y, z) => x + y + z)(M.$n(1), "6", M.$n(2))("7")("5");  // outputs "765"
 	 * ```
@@ -746,46 +833,38 @@
 	};
 	/**
 	 * A shortcut of M.$n(1)
+	 * @ja
+	 * M.$n(1)のショートカットです。
 	 */
 	M.$1 = M.$n(1);
 	/**
 	 * A shortcut of M.$n(2)
+	 * @ja
+	 * M.$n(2)のショートカットです。
 	 */
 	M.$2 = M.$n(2);
 	/**
 	 * A shortcut of M.$n(3)
+	 * @ja
+	 * M.$n(3)のショートカットです。
 	 */
 	M.$3 = M.$n(3);
 	/**
 	 * A shortcut of M.$n(4)
+	 * @ja
+	 * M.$n(4)のショートカットです。
 	 */
 	M.$4 = M.$n(4);
-	/**
-	 * A shortcut of M.$n(5)
-	 */
-	M.$5 = M.$n(5);
-	/**
-	 * A shortcut of M.$n(6)
-	 */
-	M.$6 = M.$n(6);
-	/**
-	 * A shortcut of M.$n(7)
-	 */
-	M.$7 = M.$n(7);
-	/**
-	 * A shortcut of M.$n(8)
-	 */
-	M.$8 = M.$n(8);
-	/**
-	 * A shortcut of M.$n(9)
-	 */
-	M.$9 = M.$n(9);
 	function _id(x) {
 		return x;
 	}
 	/**
+	 * @alias M.F.I
 	 * An identity function (I combinator).  
 	 * M.F.I is an alias of this method.
+	 * @ja
+	 * 恒等関数(Iコンビネータ)です。  
+	 * M.F.Iはこの関数のエイリアスです。
 	 */
 	M.F.unit = function(x) {
 		return x;
@@ -809,6 +888,8 @@
 	});
 	/**
 	 * creates an identity monad with the given value.
+	 * @ja
+	 * 与えられた引数に対する恒等モナドを生成します。
 	 */
 	M.Identity = function(x) {
 		return {
@@ -816,6 +897,9 @@
 			 * @class M.Identity
 			 * Monad 'bind' function.  
 			 * This method simply apply the element to the given function.
+			 * @ja
+			 * モナドのbind関数です。  
+			 * 単純に保持している値を与えられた関数に適用します。
 			 * ```
 			 * M.Identity(4).bind(x => M.Identity(x + 2));  // outputs M.Identity(6)
 			 * ```
@@ -826,16 +910,26 @@
 			/**
 			 * @class M.Identity
 			 * returns the element.
+			 * @ja
+			 * 保持している値を返します。
 			 */
 			value: function() {
 				return x;
 			},
+			/**
+			 * @class M.Identity
+			 * returns the string representation of the holding value.
+			 * @ja
+			 * 保持している値の文字列表現を取得します。
+			 */
 			toString: function() {
 				return x + "";
 			},
 			/**
 			 * @class M.Identity
 			 * This method is equivalent to 'bind'.
+			 * @ja
+			 * このメソッドは'bind'と等価です。
 			 */
 			multiply: function(b) {
 				return this.bind(b);
@@ -845,18 +939,25 @@
 	/**
 	 * Monad 'unit' function.  
 	 * This method is equivalent to M.Identity.
+	 * @ja
+	 * モナドのunit関数です。  
+	 * M.Identityと等価です。
 	 */
 	M.Identity.unit = function(x) {
 		return M.Identity(x);
 	};
 	/**
 	 * creates new state monad.
+	 * @ja
+	 * 状態モナドを生成します。
 	 */
 	M.State = function(func) {
 		return {
 			/**
 			 * @class M.State
 			 * Monad 'bind' function.
+			 * @ja
+			 * モナドのbind関数です。
 			 */
 			bind: function(b) {
 				var me = this;
@@ -869,6 +970,8 @@
 			/**
 			 * @class M.State
 			 * returns a tuple of the result and state by executing this monad.
+			 * @ja
+			 * このモナドを実行した結果の値と状態のタプルを返します。
 			 */
 			runState: function(s) {
 				return func(s);
@@ -876,6 +979,8 @@
 			/**
 			 * @class M.State
 			 * returns the result value by executing this monad.
+			 * @ja
+			 * このモナドを実行した結果の値を返します。
 			 */
 			evalState: function(s) {
 				return this.runState(s)(0);
@@ -883,6 +988,8 @@
 			/**
 			 * @class M.State
 			 * returns the state by executing this monad.
+			 * @ja
+			 * このモナドを実行した結果の状態を返します。
 			 */
 			execState: function(s) {
 				return this.runState(s)(1);
@@ -890,6 +997,8 @@
 			/**
 			 * @class M.State
 			 * This method is equivalent to 'bind'.
+			 * @ja
+			 * このメソッドは'bind'と等価です。
 			 */
 			multiply: function(b) {
 				return this.bind(b);
@@ -899,6 +1008,9 @@
 	/**
 	 * Monad 'unit' function.  
 	 * This method creates a state monad whose value is the given value.
+	 * @ja
+	 * モナドのunit関数です。  
+	 * このメソッドは与えられた値を持つ状態モナドを生成します。
 	 */
 	M.State.unit = function(x) {
 		return M.State(function(s) {
@@ -906,13 +1018,17 @@
 		});
 	};
 	/**
-	 * A monad which copies the state to the value.
+	 * A state monad which copies the state to the value.
+	 * @ja
+	 * 状態を値にコピーする状態モナドです。
 	 */
 	M.State.getState = M.State(function(s) {
 		return M.T(s, s);
 	});
 	/**
-	 * creates new monad which replaces the state to the given value.
+	 * creates new state monad which replaces the state to the given value.
+	 * @ja
+	 * 状態を与えられた値に置き換える状態モナドを生成します。
 	 */
 	M.State.putState = function(x) {
 		return M.State(function(_) {
@@ -920,24 +1036,32 @@
 		});
 	};
 	/**
-	 * creates new monad which replaces the state to the result of calling the given function.
+	 * creates new state monad which replaces the state to the result of calling the given function.
+	 * @ja
+	 * 状態を与えられた関数に適用した結果に置き換える状態モナドを生成します。
 	 */
 	M.State.modify = function(f) {
 		return M.State(function(x) {
 			return M.T(undef, f(x));
 		});
 	};
-	/*
+	/**
 	 * creates new state monad transformer.  
 	 * This method has two curried arguments.  
 	 * First argument is constructor of monad m, and second argument is a function a → m (v, s).
+	 * @ja
+	 * 状態モナド変換子を生成します。  
+	 * このメソッドは2つのカリー化された引数を持ちます。  
+	 * 最初の引数は任意のモナドmのコンストラクタで、2番目の引数はa → m (v, s)となるような関数です。
 	 */
 	M.StateT = function(Type) {
 		function St(func) {
 			return {
-				/*
-				 * @class M.StateT
+				/**
+				 * @name M.StateT.bind
 				 * Monad 'bind' function.
+				 * @ja
+				 * モナドのbind関数です。
 				 */
 				bind: function(b) {
 					var me = this;
@@ -947,55 +1071,75 @@
 						});
 					});
 				},
-				/*
-				 * @class M.StateT
+				/**
+				 * @name M.StateT.runStateT
 				 * returns a tuple of the result and state by executing this monad.
+				 * @ja
+				 * このモナドを実行した結果の値と状態のタプルを返します。
 				 */
 				runStateT: function(s) {
 					return func(s);
 				},
-				/*
-				 * @class M.StateT
+				/**
+				 * @name M.StateT.multiply
 				 * This method is equivalent to 'bind'.
+				 * @ja
+				 * このメソッドは'bind'と等価です。
 				 */
 				multiply: function(b) {
 					return this.bind(b);
 				}
 			};
 		}
-		/*
+		/**
+		 * @name M.StateT.unit
 		 * Monad 'unit' function.  
-		 * This method creates a state monad whose value is the given value.
+		 * This method creates a state monad transformer whose value is the given value.
+		 * @ja
+		 * モナドのunit関数です。  
+		 * このメソッドは与えられた値を持つ状態モナド変換子を生成します。
 		 */
 		St.unit = function(x) {
 			return St(function(s) {
 				return Type.unit(M.T(x, s));
 			});
 		};
-		/*
-		 * A monad which copies the state to the value.
+		/**
+		 * @name M.StateT.getState
+		 * A state monad transformer which copies the state to the value.
+		 * @ja
+		 * 状態を値にコピーする状態モナド変換子です。
 		 */
 		St.getState = St(function(s) {
 			return Type.unit(M.T(s, s));
 		});
-		/*
-		 * creates new monad which replaces the state to the given value.
+		/**
+		 * @name M.StateT.putState
+		 * creates new state monad transformer which replaces the state to the given value.
+		 * @ja
+		 * 状態を与えられた値に置き換える状態モナド変換子を生成します。
 		 */
 		St.putState = function(x) {
 			return St(function(_) {
 				return Type.unit(M.T(undef, x));
 			});
 		};
-		/*
-		 * creates new monad which replaces the state to the result of calling the given function.
+		/**
+		 * @name M.StateT.modify
+		 * creates new state monad transformer which replaces the state to the result of calling the given function.
+		 * @ja
+		 * 状態を与えられた関数に適用した結果に置き換える状態モナド変換子を生成します。
 		 */
 		St.modify = function(f) {
 			return St(function(x) {
 				return Type.unit(M.T(undef, f(x)));
 			});
 		};
-		/*
+		/**
+		 * @name M.StateT.lift
 		 * lifts the given monad to state monad transformer.
+		 * @ja
+		 * 与えられたモナドを状態モナド変換子に持ち上げます。
 		 */
 		St.lift = function(m) {
 			return St(function(s) {
@@ -1007,14 +1151,19 @@
 		return St;
 	};
 	/**
-	 * creates new maybe monad with the given value.
+	 * creates new Maybe Just monad with the given value.
+	 * @ja
+	 * 与えられた値を持つmaybe Justモナドを生成します。
 	 */
 	M.Just = function(x) {
 		return {
 			/**
 			 * @class M.Just
 			 * Monad 'bind' function.  
-			 * This method returns the result calling given function a → M.Maybe a.
+			 * This method returns the result applying the wrapped value to the given function a → M.Maybe a.
+			 * @ja
+			 * モナドのbind関数です。  
+			 * 保持している値を与えられたa → M.Maybe aとなるような関数に適用した結果を返します。
 			 * ```
 			 * M.Just(3).bind(x => M.Just(x * x));  // outputs M.Just(9)
 			 * ```
@@ -1025,6 +1174,8 @@
 			/**
 			 * @class M.Just
 			 * returns a wrapped value.
+			 * @ja
+			 * 保持している値を返します。
 			 * ```
 			 * M.Just(3).value();  // outputs 3
 			 * ```
@@ -1035,6 +1186,8 @@
 			/**
 			 * @class M.Just
 			 * returns this monad.
+			 * @ja
+			 * このモナドを返します。
 			 * ```
 			 * M.Just(3).or(M.Just(4));  // output M.Just(3)
 			 * ```
@@ -1045,6 +1198,8 @@
 			/**
 			 * @class M.Just
 			 * always returns false.
+			 * @ja
+			 * 常にfalseを返します。
 			 */
 			isNothing: function() {
 				return false;
@@ -1052,6 +1207,8 @@
 			/**
 			 * @class M.Just
 			 * This method is equivalent to 'bind'.
+			 * @ja
+			 * このメソッドは'bind'と等価です。
 			 */
 			multiply: function(b) {
 				return this.bind(b);
@@ -1062,13 +1219,18 @@
 		};
 	};
 	/**
-	 * A nothing monad.
+	 * A Maybe Nothing monad.
+	 * @ja
+	 * Nothingモナドです。
 	 */
 	M.Nothing = {
 		/**
 		 * @class M.Nothing
 		 * Monad 'bind' function.  
 		 * returns this monad.
+		 * @ja
+		 * モナドのbind関数です。  
+		 * このモナドを返します。
 		 * ```
 		 * M.Nothing.bind(x => M.Just(x * x));  // outputs M.Nothing
 		 * ```
@@ -1077,6 +1239,8 @@
 		/**
 		 * @class M.Nothing
 		 * always throws an error.
+		 * @ja
+		 * 常にエラーをスローします。
 		 */
 		value: function(_) {
 			throw new Error("can not get value from Nothing");
@@ -1084,6 +1248,8 @@
 		/**
 		 * @class M.Nothing
 		 * returns the given argument.
+		 * @ja
+		 * 与えられた引数を返します。
 		 * ```
 		 * M.Nothing.or(M.Just(4));  // outputs M.Just(4)
 		 * ```
@@ -1094,6 +1260,8 @@
 		/**
 		 * @class M.Nothing
 		 * always returns true.
+		 * @ja
+		 * 常にtrueを返します。
 		 */
 		isNothing: function() {
 			return true;
@@ -1101,6 +1269,8 @@
 		/**
 		 * @class M.Nothing
 		 * This method is equivalent to 'bind'.
+		 * @ja
+		 * このメソッドは'bind'と等価です。
 		 */
 		multiply: function(b) {
 			return this.bind(b);
@@ -1109,24 +1279,68 @@
 			return "Nothing";
 		}
 	};
+	M.Maybe = {};
 	/**
 	 * Monad 'unit' function.  
 	 * This method is equivalent to M.Just(x).
+	 * @ja
+	 * モナドのunit関数です。  
+	 * このメソッドはM.Just(x)と等価です。
 	 */
 	M.Maybe.unit = function(x) {
 		return M.Just(x);
 	};
+	/**
+	 * A Right monad of Either.
+	 * @ja
+	 * EitherモナドのRightモナドです。
+	 */
 	M.Right = function(x) {
 		return {
+			/**
+			 * @class M.Right
+			 * Monad 'bind' function.  
+			 * This method returns the result applying the wrapped value to the given function a → M.Either a.
+			 * @ja
+			 * モナドのbind関数です。  
+			 * 保持している値を与えられたa → M.Either aとなるような関数に適用した結果を返します。
+			 * ```
+			 * M.Right(3).bind(x => M.Right(x * x));  // outputs M.Right(9)
+			 * ```
+			 */
 			bind: function(b) {
 				return b(x);
 			},
+			/**
+			 * @class M.Right
+			 * apply the wrapped value to function given by second argument.
+			 * @ja
+			 * 保持している値を2番目の関数に適用します。
+			 * ```
+			 * M.Right(3).either(x => x + 2, x => x * 2);  // outputs 6
+			 * ```
+			 */
 			either: function(leftf, rightf) {
 				return rightf(x);
 			},
+			/**
+			 * @class M.Right
+			 * returns this monad.
+			 * @ja
+			 * このモナドを返します。
+			 * ```
+			 * M.Right(3).or(M.Left(2));  // outputs M.Right(3)
+			 * ```
+			 */
 			or: function(_) {
 				return this;
 			},
+			/**
+			 * @class M.Right
+			 * This method is equivalent to 'bind'.
+			 * @ja
+			 * このメソッドは'bind'と等価です。
+			 */
 			multiply: function(b) {
 				return this.bind(b);
 			},
@@ -1137,15 +1351,50 @@
 	};
 	M.Left = function(x) {
 		return {
+			/**
+			 * @class M.Left
+			 * Monad 'bind' function.  
+			 * This method returns this monad.
+			 * @ja
+			 * モナドのbind関数です。  
+			 * このモナド自身を返します。
+			 * ```
+			 * M.Left(3).bind(x => M.Right(x * x));  // outputs M.Left(3)
+			 * ```
+			 */
 			bind: function(_) {
 				return this;
 			},
+			/**
+			 * @class M.Left
+			 * apply the holded value to function given by first argument.
+			 * @ja
+			 * 保持している値を最初の関数に適用します。
+			 * ```
+			 * M.Left(3).either(x => x + 2, x => x * 2);  // outputs 5
+			 * ```
+			 */
 			either: function(leftf, rightf) {
 				return leftf(x);
 			},
+			/**
+			 * @class M.Left
+			 * returns the Either monad given by the first argument.
+			 * @ja
+			 * 最初の引数で与えられたモナドを返します。
+			 * ```
+			 * M.Left(3).or(M.Right(2));  // outputs M.Right(3)
+			 * ```
+			 */
 			or: function(b) {
 				return b;
 			},
+			/**
+			 * @class M.Left
+			 * This method is equivalent to 'bind'.
+			 * @ja
+			 * このメソッドは'bind'と等価です。
+			 */
 			multiply: function(b) {
 				return this.bind(b);
 			},
@@ -1154,11 +1403,30 @@
 			}
 		};
 	};
-	M.Either = {
-		unit: function(x) {
-			return M.Right(x);
-		}
+	M.Either = {};
+	/**
+	 * Monad 'unit' function.  
+	 * This method is equivalent to M.Right(x).
+	 * @ja
+	 * モナドのunit関数です。  
+	 * このメソッドはM.Right(x)と等価です。
+	 */
+	M.Either.unit = function(x) {
+		return M.Right(x);
 	};
+	/**
+	 * @alias M.faites
+	 * @alias M['do']
+	 * The 'do' notation.
+	 * @ja
+	 * do記法です。  
+	 * ```
+	 * M.tu($L(1, 2),
+	 * 	x => $L(x * 2, x * 3),
+	 * 	x => $L(x + 2, x + 3),
+	 * 	x => $L(x * 2)).take();  // outputs [8, 10, 10, 12, 12, 14, 16, 18] 
+	 * ```
+	 */
 	M.tu = M.faites = M["do"] = function(monad, /*args*/) {
 		var res = monad,
 			i;
