@@ -887,7 +887,7 @@
 			 * 最初の引数をthisの値、2番目の引数を引数として関数を呼び出します。  
 			 * 2番目の引数は配列で与えます。
 			 * ```
-			 * M.F((x, y, z) => x + y + z).apply(null, [7, 6])(5);  // outputs 20
+			 * M.F((x, y, z) => x + y + z).apply(null, [7, 6])(5);  // outputs 18
 			 * ```
 			 */
 			apply: function(thisArg, args) {
@@ -912,7 +912,7 @@
 			 * @ja
 			 * 最初の引数をthisの値、2番目以降の引数を引数として関数を呼び出します。
 			 * ```
-			 * M.F((x, y, z) => x + y + z).call(null, 7, 6)(5);  // outputs 20
+			 * M.F((x, y, z) => x + y + z).call(null, 7, 6)(5);  // outputs 18
 			 * ```
 			 */
 			call: function(thisArg) {
