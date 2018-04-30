@@ -379,6 +379,33 @@ describe("MonadPrimus", function () {
 			expect(M.L.zip(M.L.N(1), M.L.N(2)).take(5).map(toarray)).toEqual([[1, 2], [2, 3], [3, 4], [4, 5], [5, 6]]);
 			expect(M.L.zip(M.L.N(1), $L(3, 4, 5)).take().map(toarray)).toEqual([[1, 3], [2, 4], [3, 5]]);
 		});
+		it("find", function () {
+			expect($L(1, 4, 5).find(function(x) { return x % 2 === 0; })).toBe(4);
+			expect($L(1, 3, 6).find(function(x) { return x % 2 === 0; })).toBe(6);
+			expect($L(2, 3, 6).find(function(x) { return x % 2 === 0; })).toBe(2);
+			expect($L(1, 3, 5).find(function(x) { return x % 2 === 0; })).toBe(undefined);
+			expect(M.Nil.find(function(x) { return x % 2 === 0; })).toBe(undefined);
+			expect($L().find(function(x) { return x % 2 === 0; })).toBe(undefined);
+			expect(M.L.N(1).find(function(x) { return x % 5 === 0; })).toBe(5);
+		});
+		it("includes", function () {
+			expect($L(3, 4, 6).includes(3)).toBe(true);
+			expect($L(3, 4, 6).includes(6)).toBe(true);
+			expect($L(3, 4, 6).includes(5)).toBe(false);
+			expect(M.Nil.includes(1)).toBe(false);
+			expect($L().includes(1)).toBe(false);
+			expect($L(3, 9, NaN).includes(NaN)).toBe(true);
+			expect(M.L.N(1).includes(5)).toBe(true);
+		});
+		it("toString", function () {
+			expect($L(3, 4, 6).toString()).toBe("$L(3, 4, 6)");
+			expect($L(6).toString()).toBe("$L(6)");
+			expect(M.L.range(1, 10).toString()).toBe("$L(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)");
+			expect(M.L.range(1, 11).toString()).toBe("$L(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...)");
+			expect(M.Nil.toString()).toBe("$L()");
+			expect($L().toString()).toBe("$L()");
+			expect(M.L.N(1).toString()).toBe("$L(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...)");
+		});
 		it("monad rule", function () {
 			expect(M.L.unit(3).bind(fn).take()).toEqual(fn(3).take());
 			expect($L(1, 2, 3).bind(M.L.unit).take()).toEqual($L(1, 2, 3).take());
@@ -511,6 +538,7 @@ describe("MonadPrimus", function () {
 		function f5(x, y, z) { return x + y + z; }
 		function f6(x) { return x + "3"; }
 		function f7(x) { return x + "2"; }
+		function f8(x, y) { return this.x + x + y; }
 		it("function", function () {
 			expect($F(f1)(7)(6)(5)).toBe(37);
 			expect($F(f1)(7, 6)(5)).toBe(37);
@@ -577,6 +605,27 @@ describe("MonadPrimus", function () {
 			expect($F(f1).multiply(f6).multiply(f7)(3)(4)(6)).toBe("2732");
 			expect(M.F(f1).pipe(M.F(f3))(7)(6)(5)).toBe(40);
 		});
+		it("apply", function () {
+			expect($F(f5).apply(null, ["7", "6", "5"])).toBe("765");
+			expect($F(f5).apply(null, ["7", "6"])("5")).toBe("765");
+			expect($F(f5).apply(null, [M.$1, "6", M.$2])("7")("5")).toBe("765");
+			expect($F(f8).apply({x: "7"}, ["6", "5"])).toBe("765");
+			expect($F(f8).apply({x: "7"}, ["6"])("5")).toBe("765");
+		});
+		it("bind", function () {
+			expect($F(f8).bind({x: "7"}).apply({x: "9"}, ["6", "5"])).toBe("765");
+			expect($F(f8).bind({x: "7"}).apply({x: "9"}, ["6"])("5")).toBe("765");
+		});
+		it("call", function () {
+			expect($F(f5).call(null, "7", "6", "5")).toBe("765");
+			expect($F(f5).call(null, "7", "6")("5")).toBe("765");
+			expect($F(f5).call(null, M.$1, "6", M.$2)("7")("5")).toBe("765");
+			expect($F(f8).call({x: "7"}, "6", "5")).toBe("765");
+			expect($F(f8).call({x: "7"}, "6")("5")).toBe("765");
+		});
+//		it("toString", function () {
+//			expect($F(function() {}).toString()).toBe("function () {}");
+//		});
 		it("monoid rule", function () {
 			expect(M.F.unit.multiply(M.F(f7))(3)).toBe("32");
 			expect(M.F(f7).multiply(M.F.unit)(3)).toBe("32");

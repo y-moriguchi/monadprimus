@@ -8,6 +8,7 @@
  */
 (function(root) {
 	var M = {},
+		LIST_ID = {},
 		TUPLE_ID = {},
 		FUNCTION_ID = {},
 		PLACEHOLDER_ID = {},
@@ -350,6 +351,63 @@
 			 */
 			multiply: function(b) {
 				return this.bind(b);
+			},
+			/**
+			 * @class M.L
+			 * returns a value which satisfies the given testing function.  
+			 * If no values were matched, this method returns undefined.  
+			 * Notice: This method may not stop if elements of the list is infinity.
+			 * @ja
+			 * 与えられた関数にマッチする値を返します。  
+			 * 見つからないときはundefinedを返します。  
+			 * 注意: このメソッドは要素数が無限個のとき停止しない可能性があります。
+			 * ```
+			 * M.L(3, 4, 6).find(x => x % 2 === 0);   // outputs 4
+			 * M.L(3, 5, 11).find(x => x % 2 === 0);  // outputs undefined
+			 * ```
+			 */
+			find: function(cond) {
+				var next;
+				for(next = this; next !== nil; next = next.rest()) {
+					if(cond(next.value())) {
+						return next.value();
+					}
+				}
+				return undef;
+			},
+			/**
+			 * @class M.L
+			 * returns true if this list contains the given value, otherwise returns false.  
+			 * Notice: This method may not stop if elements of the list is infinity.
+			 * @ja
+			 * 与えられた値がリストに存在するときtrueを、そうでないときfalseを返します。  
+			 * 注意: このメソッドは要素数が無限個のとき停止しない可能性があります。
+			 * ```
+			 * M.L(3, 4, 6).includes(4);       // outputs true
+			 * M.L(3, 4, 6).includes(9);       // outputs false
+			 * M.L(3, 9, NaN).includes(NaN);   // outputs true
+			 * ```
+			 */
+			includes: function(value) {
+				return this.some(function(x) {
+					return x === value || (typeof x === 'number' && typeof value === 'number' && isNaN(x) && isNaN(value));
+				});
+			},
+			toString: function() {
+				var i,
+					result = "$L(",
+					val11 = this.take(11),
+					rep = val11.length > 10 ? 10 : val11.length;
+				for(i = 0; i < rep; i++) {
+					if(i > 0) {
+						result += ", ";
+					}
+					result += val11[i] + "";
+				}
+				if(val11.length > 10) {
+					result += ", ...";
+				}
+				return result + ")";
 			}
 		};
 	}
@@ -392,6 +450,15 @@
 		},
 		multiply: function(b) {
 			return this.bind(b);
+		},
+		find: function(_) {
+			return undef;
+		},
+		includes: function(_) {
+			return false;
+		},
+		toString: function() {
+			return "$L()";
 		}
 	};
 	/**
@@ -746,14 +813,14 @@
 			}
 			return false;
 		}
-		function partial(args, action) {
+		function partial(args, action, thisArg, bound) {
 			return function() {
 				var argsnew = assignArgs(args, arguments);
 				argsnew = shiftPlaceholder(argsnew);
 				if(argsnew.length < len || existsPlaceholder(argsnew)) {
-					return M.F(partial(argsnew, action));
+					return M.F(partial(argsnew, action, thisArg, bound));
 				} else {
-					var res = fn.apply(null, argsnew);
+					var res = fn.apply(bound ? bound : thisArg, argsnew);
 					return action ? action(res) : res;
 				}
 			};
@@ -811,6 +878,49 @@
 			 */
 			value: function() {
 				return func;
+			},
+			/**
+			 * @class M.F
+			 * calls this function with first argument as a this value and second argument as arguments.  
+			 * The arguments is given as an array.
+			 * @ja
+			 * 最初の引数をthisの値、2番目の引数を引数として関数を呼び出します。  
+			 * 2番目の引数は配列で与えます。
+			 * ```
+			 * M.F((x, y, z) => x + y + z).apply(null, [7, 6])(5);  // outputs 20
+			 * ```
+			 */
+			apply: function(thisArg, args) {
+				return partial([], null, thisArg).apply(null, args);
+			},
+			/**
+			 * @class M.F
+			 * creates the new function whose this value is always used the given argument.
+			 * @ja
+			 * 関数のthisの値が与えられた引数となるような新しい関数を生成します。
+			 * ```
+			 * // outputs "765"
+			 * M.F(function(x, y) { return this.x + x + y; }).bind({x: "7"}).apply({x: "9"}, ["6", "5"]);
+			 * ```
+			 */
+			bind: function(bound) {
+				return partial([], null, null, bound);
+			},
+			/**
+			 * @class M.F
+			 * calls this function with first argument as a this value and the rest arguments as arguments.
+			 * @ja
+			 * 最初の引数をthisの値、2番目以降の引数を引数として関数を呼び出します。
+			 * ```
+			 * M.F((x, y, z) => x + y + z).call(null, 7, 6)(5);  // outputs 20
+			 * ```
+			 */
+			call: function(thisArg) {
+				var args = Array.prototype.slice.call(arguments, 1);
+				return this.apply(thisArg, args);
+			},
+			toString: function() {
+				return fn.toString();
 			},
 			"@functionId@": FUNCTION_ID
 		});
