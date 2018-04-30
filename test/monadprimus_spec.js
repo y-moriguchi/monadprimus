@@ -406,6 +406,23 @@ describe("MonadPrimus", function () {
 			expect($L().toString()).toBe("$L()");
 			expect(M.L.N(1).toString()).toBe("$L(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...)");
 		});
+		it("isList", function () {
+			expect(M.L.isList($L(1, 2))).toBe(true);
+			expect(M.L.isList($L())).toBe(true);
+			expect(M.L.isList(M.Nil)).toBe(true);
+			expect(M.L.isList($T(1, 2))).toBe(false);
+			expect(M.L.isList($T())).toBe(false);
+			expect(M.L.isList($F(function() {}))).toBe(false);
+			expect(M.L.isList({a: 1})).toBe(false);
+			expect(M.L.isList(961)).toBe(false);
+			expect(M.L.isList("961")).toBe(false);
+			expect(M.L.isList([1, 2, 3])).toBe(false);
+			expect(M.L.isList(null)).toBe(false);
+			expect(M.L.isList(true)).toBe(false);
+			expect(M.L.isList(false)).toBe(false);
+			expect(M.L.isList(undefined)).toBe(false);
+			expect(M.L.isList(function() {})).toBe(false);
+		});
 		it("monad rule", function () {
 			expect(M.L.unit(3).bind(fn).take()).toEqual(fn(3).take());
 			expect($L(1, 2, 3).bind(M.L.unit).take()).toEqual($L(1, 2, 3).take());
@@ -457,6 +474,23 @@ describe("MonadPrimus", function () {
 			expect($T()(0)).toBe(undefined);
 			expect($T().toArray()).toEqual([]);
 			expect($T().toString()).toBe("()");
+		});
+		it("isTuple", function () {
+			expect(M.T.isTuple($T(1, 2))).toBe(true);
+			expect(M.T.isTuple($T())).toBe(true);
+			expect(M.T.isTuple($L(1, 2))).toBe(false);
+			expect(M.T.isTuple($L())).toBe(false);
+			expect(M.T.isTuple(M.Nil)).toBe(false);
+			expect(M.T.isTuple($F(function() {}))).toBe(false);
+			expect(M.T.isTuple({a: 1})).toBe(false);
+			expect(M.T.isTuple(961)).toBe(false);
+			expect(M.T.isTuple("961")).toBe(false);
+			expect(M.T.isTuple([1, 2, 3])).toBe(false);
+			expect(M.T.isTuple(null)).toBe(false);
+			expect(M.T.isTuple(true)).toBe(false);
+			expect(M.T.isTuple(false)).toBe(false);
+			expect(M.T.isTuple(undefined)).toBe(false);
+			expect(M.T.isTuple(function() {})).toBe(false);
 		});
 	});
 

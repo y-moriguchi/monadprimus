@@ -408,7 +408,8 @@
 					result += ", ...";
 				}
 				return result + ")";
-			}
+			},
+			"@listId@": LIST_ID
 		};
 	}
 	nil = {
@@ -459,7 +460,8 @@
 		},
 		toString: function() {
 			return "$L()";
-		}
+		},
+		"@listId@": LIST_ID
 	};
 	/**
 	 * An empty list.
@@ -487,6 +489,14 @@
 		return res;
 	};
 	M.L.Nil = nil;
+	/**
+	 * returns true if the argument is a list.
+	 * @ja
+	 * 与えられた引数がリストのときtrueを得ます。
+	 */
+	M.L.isList = function(obj) {
+		return typeof obj === "object" && obj !== null && obj["@listId@"] === LIST_ID;
+	};
 	/**
 	 * Monad 'unit' (or 'return') function.  
 	 * The method returns new list which contains only the given element.
@@ -742,7 +752,7 @@
 	 * オブジェクトがタプルであるか判定します。
 	 */
 	M.T.isTuple = function(obj) {
-		return obj["@tupleId@"] === TUPLE_ID;
+		return typeof obj === "function" && obj["@tupleId@"] === TUPLE_ID;
 	};
 	function placeholder(n) {
 		return {
